@@ -4,3 +4,4 @@ fastapi==0.61.1
 orjson
 uvicorn==0.12.2
 uvloop==0.14.0
+python-dotenv==0.19.2
