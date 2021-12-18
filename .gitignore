@@ -50,3 +50,4 @@ ENV/
 
 # auto generated docs
 doc.html
+etl/PostgresStorages.json

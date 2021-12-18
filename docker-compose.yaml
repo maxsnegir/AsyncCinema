@@ -1,6 +1,16 @@
 version: "3"
 
 services:
+  db:
+    image: postgres:12.4
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./etl/sqlite_to_postgres/psql_schema.sql:/docker-entrypoint-initdb.d/psql_schema.sql
+    expose:
+      - 5432
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
@@ -11,8 +21,6 @@ services:
       - es_data:/usr/share/elasticsearch/data
     expose:
       - 9200
-    ports:
-      - "9200:9200"
     env_file:
       - .env
 
@@ -20,13 +28,20 @@ services:
     image: redis
     expose:
       - 6379
-    ports:
-      - "6379:6379"
     command:
       - redis-server
     env_file:
       - .env
 
+  etl:
+    build: ./etl
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - es
+
 
 volumes:
   es_data:
+  postgres_data:
