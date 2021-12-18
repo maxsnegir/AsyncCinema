@@ -1,0 +1,4 @@
+elasticsearch==7.15.2
+psycopg2==2.9.2
+pydantic==1.8.2
+python-dotenv==0.19.2
