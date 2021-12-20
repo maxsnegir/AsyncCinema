@@ -52,7 +52,7 @@
         "type": "nested",
         "dynamic": "strict",
         "properties": {
-          "id": {
+          "uuid": {
             "type": "keyword"
           },
           "name": {
@@ -74,39 +74,27 @@
         "type": "text",
         "analyzer": "ru_en"
       },
-      "director": {
+      "directors": {
         "type": "nested",
         "dynamic": "strict",
         "properties": {
-          "id": {
+          "uuid": {
             "type": "keyword"
           },
-          "name": {
+          "full_name": {
             "type": "text",
             "analyzer": "ru_en"
           }
         }
       },
-      "actors_names": {
-        "type": "text",
-        "analyzer": "ru_en"
-      },
-      "directors_names": {
-        "type": "text",
-        "analyzer": "ru_en"
-      },
-      "writers_names": {
-        "type": "text",
-        "analyzer": "ru_en"
-      },
       "actors": {
         "type": "nested",
         "dynamic": "strict",
         "properties": {
-          "id": {
+          "uuid": {
             "type": "keyword"
           },
-          "name": {
+          "full_name": {
             "type": "text",
             "analyzer": "ru_en"
           }
@@ -116,10 +104,10 @@
         "type": "nested",
         "dynamic": "strict",
         "properties": {
-          "id": {
+          "uuid": {
             "type": "keyword"
           },
-          "name": {
+          "full_name": {
             "type": "text",
             "analyzer": "ru_en"
           }
