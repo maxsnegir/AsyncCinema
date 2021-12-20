@@ -11,12 +11,8 @@ class FilmWork(BaseModel):
     genre: Union[List[Dict[Union[str, UUID], str]], None]
 
     actors: Union[List[Dict[Union[str, UUID], str]], None]
-    director: Union[List[Dict[Union[str, UUID], str]], None]
+    directors: Union[List[Dict[Union[str, UUID], str]], None]
     writers: Union[List[Dict[Union[str, UUID], str]], None]
-
-    actors_names: Union[List[str], None]
-    directors_names: Union[List[str], None]
-    writers_names: Union[List[str], None]
 
 
 class Genre(BaseModel):

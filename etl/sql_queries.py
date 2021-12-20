@@ -33,14 +33,10 @@ film_work_data_by_ids = """
                fw.rating imdb_rating,
                fw.updated_at updated_at,
 
-               ARRAY_AGG(DISTINCT jsonb_build_object('name', g.name, 'id', g.id)) AS genre,
-               ARRAY_AGG(DISTINCT jsonb_build_object('id', p.id, 'name', p.full_name)) FILTER (WHERE pfw.role='director') director,
-               ARRAY_AGG(DISTINCT jsonb_build_object('id', p.id, 'name', p.full_name)) FILTER (WHERE pfw.role='actor') actors,
-               ARRAY_AGG(DISTINCT jsonb_build_object('id', p.id, 'name', p.full_name)) FILTER (WHERE pfw.role='writer') writers,
-
-               ARRAY_AGG(DISTINCT p.full_name) FILTER (WHERE pfw.role='actor') actors_names,
-               ARRAY_AGG(DISTINCT p.full_name) FILTER (WHERE pfw.role='director') directors_names,
-               ARRAY_AGG(DISTINCT p.full_name) FILTER (WHERE pfw.role='writer') writers_names
+               ARRAY_AGG(DISTINCT jsonb_build_object('uuid', g.id, 'name', g.name)) AS genre,
+               ARRAY_AGG(DISTINCT jsonb_build_object('uuid', p.id, 'full_name', p.full_name)) FILTER (WHERE pfw.role='director') directors,
+               ARRAY_AGG(DISTINCT jsonb_build_object('uuid', p.id, 'full_name', p.full_name)) FILTER (WHERE pfw.role='actor') actors,
+               ARRAY_AGG(DISTINCT jsonb_build_object('uuid', p.id, 'full_name', p.full_name)) FILTER (WHERE pfw.role='writer') writers
 
         FROM content.film_work fw
             LEFT JOIN content.genre_film_work gfw on fw.id=gfw.film_work_id 
