@@ -4,7 +4,7 @@ from uuid import UUID
 
 
 class FilmWork(BaseModel):
-    id: Union[str, UUID]
+    uuid: Union[str, UUID]
     title: Union[str, None]
     description: Union[str, None]
     imdb_rating: Union[float, None]
@@ -16,13 +16,13 @@ class FilmWork(BaseModel):
 
 
 class Genre(BaseModel):
-    id: Union[str, UUID]
+    uuid: Union[str, UUID]
     name: Union[str, None]
     description: Union[str, None]
 
 
 class Person(BaseModel):
-    id: Union[str, UUID]
+    uuid: Union[str, UUID]
     full_name: Union[str, None]
     role: Union[List[str], None]
     film_ids: Union[List, None]

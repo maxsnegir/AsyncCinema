@@ -23,6 +23,8 @@ services:
       - 9200
     env_file:
       - .env
+    ports:
+      - "9200:9200"
 
   redis:
     image: redis
@@ -32,6 +34,8 @@ services:
       - redis-server
     env_file:
       - .env
+    ports:
+      - "6379:6379"
 
   etl:
     build: ./etl
@@ -40,8 +44,11 @@ services:
     depends_on:
       - db
       - es
+    volumes:
+      - etl_data:/etl
 
 
 volumes:
   es_data:
   postgres_data:
+  etl_data:

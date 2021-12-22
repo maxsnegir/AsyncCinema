@@ -42,7 +42,7 @@
   "mappings": {
     "dynamic": "strict",
     "properties": {
-      "id": {
+      "uuid": {
         "type": "keyword"
       },
       "name": {
