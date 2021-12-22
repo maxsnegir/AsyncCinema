@@ -1,19 +1,19 @@
 updated_genres = """
-    SELECT id, updated_at
+    SELECT id uuid, updated_at
     FROM content.genre
     WHERE updated_at > %s::timestamp
     ORDER BY updated_at
     """
 
 updated_film_works = """
-    SELECT fw.id, fw.updated_at
+    SELECT fw.id uuid, fw.updated_at
     FROM content.film_work fw
     WHERE updated_at > %s::timestamp
     ORDER BY updated_at
     """
 
 updated_persons = """
-SELECT p.id,
+SELECT p.id uuid,
        p.birth_date, 
        p.updated_at,
        ARRAY_AGG(DISTINCT pfw.film_work_id)::text[] AS film_ids,
@@ -27,7 +27,7 @@ SELECT p.id,
 """
 
 film_work_data_by_ids = """
-        SELECT DISTINCT fw.id id,
+        SELECT DISTINCT fw.id uuid,
                fw.title title,
                fw.description description,
                fw.rating imdb_rating,
@@ -49,14 +49,14 @@ film_work_data_by_ids = """
         """
 
 film_work_id_by_genre = """
-        SELECT DISTINCT fw.id
+        SELECT DISTINCT fw.id uuid
         FROM content.film_work fw
         LEFT JOIN content.genre_film_work gfw ON gfw.film_work_id = fw.id
         WHERE gfw.genre_id IN %s
         """
 
 film_work_id_by_person = """
-        SELECT fw.id
+        SELECT fw.id uuid
         FROM content.film_work fw
         LEFT JOIN content.person_film_work pfw ON pfw.film_work_id = fw.id
         WHERE pfw.person_id IN %s
