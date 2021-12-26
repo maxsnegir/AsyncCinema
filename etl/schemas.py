@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict
 from uuid import UUID
 
 
 class FilmWork(BaseModel):
-    uuid: Union[str, UUID]
+    id: Union[str, UUID]
     title: Union[str, None]
     description: Union[str, None]
     imdb_rating: Union[float, None]
@@ -16,13 +16,13 @@ class FilmWork(BaseModel):
 
 
 class Genre(BaseModel):
-    uuid: Union[str, UUID]
+    id: Union[str, UUID]
     name: Union[str, None]
     description: Union[str, None]
 
 
 class Person(BaseModel):
-    uuid: Union[str, UUID]
+    id: Union[str, UUID]
     full_name: Union[str, None]
     role: Union[List[str], None]
     film_ids: Union[List, None]

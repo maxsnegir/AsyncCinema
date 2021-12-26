@@ -47,6 +47,16 @@ services:
     volumes:
       - etl_data:/etl
 
+  api:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - es
+    ports:
+      - '8000:8000'
+
 
 volumes:
   es_data:

@@ -42,12 +42,11 @@
   "mappings": {
     "dynamic": "strict",
     "properties": {
-      "uuid": {
+      "id": {
         "type": "keyword"
       },
       "name": {
-        "type": "text",
-        "analyzer": "ru_en"
+        "type": "keyword"
       },
       "description": {
         "type": "text",
