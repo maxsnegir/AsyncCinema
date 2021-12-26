@@ -38,6 +38,6 @@ class ElasticsearchLoader:
         for doc in docs:
             yield {
                 "_index": self.index_name,
-                "_id": doc.uuid,
+                "_id": doc.id,
                 **doc.dict()
             }
