@@ -1,4 +1,3 @@
-import uuid
 from http import HTTPStatus
 from typing import List
 
@@ -10,7 +9,7 @@ from services.genre import GenreService, get_genre_service
 router = APIRouter()
 
 
-@router.get('/{genre_id}', response_model=Genre)
+@router.get('/{genre_id}', response_model=Genre, description='Данные по конкретному жанру.')
 async def genre_details(genre_id: str, genre_service: GenreService = Depends(get_genre_service)) -> Genre:
     genre = await genre_service.get_by_id(genre_id)
     if not genre:
@@ -19,12 +18,10 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(get
     return genre
 
 
-@router.get('/')
-async def genre_list(sort: str = Query(None, description='Параметр сортировки'),
-                     page_size: int = Query(50, ge=1, le=200, description='Размер страницы'),
+@router.get('/', description='Список жанров.')
+async def genre_list(page_size: int = Query(50, ge=1, le=200, description='Размер страницы'),
                      page_number: int = Query(1, ge=1, description='Номер страницы'),
                      genre_service: GenreService = Depends(get_genre_service)) -> List[Genre]:
-    genres = await genre_service.get_list(sort, page_size, page_number)
-    if not genres:
-        return []
+
+    genres = await genre_service.get_list(page_size=page_size, page_number=page_number)
     return genres

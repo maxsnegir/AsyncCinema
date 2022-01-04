@@ -1,9 +1,10 @@
 from typing import List, Tuple
+
 from psycopg2.extensions import connection as _connection, cursor as _cursor
 
 import sql_queries
-from state import State
 from helpers import backoff
+from state import State
 
 
 class Extractor:

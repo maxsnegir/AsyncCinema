@@ -1,13 +1,10 @@
 import datetime
 from typing import Optional, List
 
-from uuid import UUID
-
-from models.base import OrjsonBaseModel
+from models.base import BaseModel
 
 
-class Person(OrjsonBaseModel):
-    id: UUID
+class Person(BaseModel):
     full_name: Optional[str]
     birth_date: Optional[datetime.date]
     role: Optional[List[str]]

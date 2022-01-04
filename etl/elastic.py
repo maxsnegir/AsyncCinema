@@ -1,11 +1,12 @@
 import json
 from typing import List, Generator
 
-from elasticsearch.helpers import bulk
 from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
+
+from config import logger
 from helpers import backoff
 from schemas import FilmWork
-from config import logger
 
 
 class ElasticsearchLoader:
@@ -38,6 +39,6 @@ class ElasticsearchLoader:
         for doc in docs:
             yield {
                 "_index": self.index_name,
-                "_id": doc.id,
+                "_id": doc.uuid,
                 **doc.dict()
             }

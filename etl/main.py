@@ -1,14 +1,12 @@
-import time
-
 import psycopg2
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import DictCursor
 
 import config as conf
 from elastic import ElasticsearchLoader
-from state import State, JsonFileStorage
-from schemas import FilmWork, Genre, Person
 from extractor import Extractor
+from schemas import FilmWork, Genre, Person
+from state import State, JsonFileStorage
 
 
 def etl(pg_connection: _connection) -> None:

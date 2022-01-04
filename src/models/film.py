@@ -1,13 +1,10 @@
 from typing import List, Union, Dict, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
-
-from models.base import OrjsonBaseModel
+from models.base import BaseModel
 
 
-class Film(OrjsonBaseModel):
-    uuid: str
+class Film(BaseModel):
     title: str
     description: Union[str, None]
     imdb_rating: float
@@ -19,5 +16,4 @@ class Film(OrjsonBaseModel):
 
 class FilmShort(BaseModel):
     title: str
-    description: Union[str, None]
     imdb_rating: Optional[float]

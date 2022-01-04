@@ -41,14 +41,12 @@ app.include_router(film.router, prefix='/api/v1/film', tags=['film'])
 app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
 app.include_router(person.router, prefix='/api/v1/person', tags=['person'])
 
-# для локальной разработки, можно дебажить
-# if __name__ == '__main__':
-    # time.sleep(60)
-    # uvicorn.run(
-    #     'main:app',
-    #     host='0.0.0.0',
-    #     port=8000,
-#         reload=True,
-#         log_config=LOGGING,
-#         log_level=logging.DEBUG,
-#     )
+if __name__ == '__main__':
+    uvicorn.run(
+        'main:app',
+        host='0.0.0.0',
+        port=8000,
+        reload=True,
+        log_config=LOGGING,
+        log_level=logging.DEBUG,
+    )

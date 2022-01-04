@@ -1,8 +1,9 @@
 from functools import wraps
 from time import sleep
-import psycopg2
 
+import psycopg2
 from elasticsearch import ElasticsearchException
+
 from config import logger
 
 

@@ -3,41 +3,79 @@ from typing import Optional
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.exceptions import NotFoundError as ES_NotFoundError
-from pydantic import BaseModel
+from elasticsearch_dsl import Search, Q
 
+from models.base import BaseModel
 
 CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 
 class BaseService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
+
+    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index):
         self.redis = redis
         self.elastic = elastic
+        self.index = index
+        self.search_fields = []
+        self.model = BaseModel
 
-    async def get_by_id(self, id: str) -> Optional[BaseModel]:
-        instance = await self._get_from_cache(id)
+    async def get_by_id(self, instance_id: str):
+        """Получаем объект по id"""
+
+        instance = await self._get_from_cache(instance_id)
         if not instance:
-            instance = await self._get_from_elastic(id)
+            instance = await self._get_from_elastic(instance_id)
             if not instance:
                 return None
             await self._put_to_cache(instance)
-
         return instance
 
-    async def _get_from_elastic(self, index: str, model: BaseModel, id: str) -> Optional[BaseModel]:
+    async def get_list(self, **params):
+        """Получаем список объектов"""
+
+        body = self.get_body_query(**params)
+        docs = await self.elastic.search(index=self.index, body=body)
+        return [self.model(**dict(doc['_source'])) for doc in docs['hits']['hits']]
+
+    async def _get_from_elastic(self, instance_id: str) -> Optional[BaseModel]:
         try:
-            doc = await self.elastic.get(index, id)
-            return model(**doc['_source'])
+            doc = await self.elastic.get(self.index, instance_id)
+            return self.model(**doc['_source'])
         except ES_NotFoundError:
             return
 
-    async def _get_from_cache(self, model: BaseModel, id: str) -> Optional[BaseModel]:
-        data = await self.redis.get(id)
-        if not data:
-            return None
-
-        instance = model.parse_raw(data)
+    async def _get_from_cache(self, instance_id: str):
+        instance = None
+        data = await self.redis.get(instance_id)
+        if data:
+            instance = self.model.parse_raw(data)
         return instance
 
-    async def _put_to_cache(self, instance: BaseModel):
-        await self.redis.set(str(instance.id), instance.json(), expire=CACHE_EXPIRE_IN_SECONDS)
+    async def _put_to_cache(self, instance):
+        await self.redis.set(str(instance.uuid), instance.json(), expire=CACHE_EXPIRE_IN_SECONDS)
+
+    def get_body_query(self, **params) -> dict:
+        """Формируем тело запроса в elastic"""
+
+        _sort = params.get('sort')
+        page_number = params.get('page_number')
+        page_size = params.get('page_size')
+        filter_genre = params.get('filter_genre')
+        query = params.get('query')
+        person_id = params.get('person_id')
+
+        body_query = Search(using=self.elastic, index=self.index)
+        start = (page_number - 1) * page_size
+        body_query = body_query[start: start + page_size]
+
+        if _sort:
+            body_query = body_query.sort(_sort)
+        if query:
+            body_query = body_query.query("multi_match", query=query, fields=self.search_fields)
+        if filter_genre:
+            body_query = body_query.query('nested', path='genre', query=Q("match", genre__id=filter_genre))
+        if person_id:
+            body_query = body_query.query(Q('nested', path='actors', query=Q("match", actors__uuid=person_id)) |
+                                          Q('nested', path='directors', query=Q("match", directors__uuid=person_id)) |
+                                          Q('nested', path='writers', query=Q("match", writers__uuid=person_id)))
+        return body_query.to_dict()
