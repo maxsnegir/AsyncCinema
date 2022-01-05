@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  db:
+  postgres:
     image: postgres:12.4
     restart: always
     env_file:
@@ -10,7 +10,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
       - ./etl/sqlite_to_postgres/psql_schema.sql:/docker-entrypoint-initdb.d/psql_schema.sql
 
-  es:
+  elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
     environment:
       - discovery.type=single-node
@@ -32,24 +32,23 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - es
+      - postgres
+      - elasticsearch
     volumes:
       - etl_data:/etl
 
-  api:
+  backend_api:
     build: src/
     restart: always
     env_file:
       - .env
     depends_on:
       - redis
-      - es
+      - elasticsearch
     ports:
       - '8000:8000'
     volumes:
       - ./src/:/api/
-
 
 volumes:
   es_data:

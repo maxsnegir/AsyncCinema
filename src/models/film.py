@@ -7,7 +7,7 @@ from models.base import BaseModel
 class Film(BaseModel):
     title: str
     description: Union[str, None]
-    imdb_rating: float
+    imdb_rating: Optional[float]
     genre: Union[List[Dict[Union[str, UUID], str]], None]
     actors: Union[List[Dict[Union[str, UUID], str]], None]
     directors: Union[List[Dict[Union[str, UUID], str]], None]
