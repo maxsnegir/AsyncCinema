@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import aioredis
 import aiohttp
 import pytest
 from elasticsearch import AsyncElasticsearch
@@ -27,6 +28,14 @@ async def session():
     session = aiohttp.ClientSession()
     yield session
     await session.close()
+
+
+@pytest.fixture(scope='session')
+async def redis_client():
+    redis = await aioredis.create_redis_pool(('localhost', 6379))
+    await redis.flushall()
+    yield redis
+    redis.close()
 
 
 @pytest.fixture
