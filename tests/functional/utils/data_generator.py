@@ -1,13 +1,22 @@
 import random
 import uuid
+from typing import Callable
 
 
-def gen_film_data(count):
+def generate_data(index) -> Callable:
+    callbacks = {
+        "movies": gen_film_data,
+        "persons": None,
+        "genre": None
+    }
+    return callbacks[index]
 
+
+def gen_film_data():
     film_list = []
     text_const = "Lorem ipsum dolor sit amet"
 
-    for _ in range(count):
+    for _ in range(100):
         film_id = uuid.uuid4()
         film = {
             "uuid": film_id,

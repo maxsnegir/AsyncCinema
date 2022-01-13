@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    env_file:
+      - test.env
+    ports:
+      - "9200:9200"
+
+  redis:
+    restart: unless-stopped
+    image: redis
+    env_file:
+      - test.env
+    command:
+      - redis-server
+    ports:
+      - "6379:6379"
+
+  backend_api:
+    build: ../../src/.
+    restart: always
+    env_file:
+      - test.env
+    depends_on:
+      - redis
+      - elasticsearch
+    ports:
+      - '8001:8000'

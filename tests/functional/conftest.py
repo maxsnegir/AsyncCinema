@@ -1,12 +1,14 @@
+import http
 from dataclasses import dataclass
 
-import aioredis
 import aiohttp
+import aioredis
 import pytest
 from elasticsearch import AsyncElasticsearch
 from multidict import CIMultiDictProxy
 
-SERVICE_URL = 'http://127.0.0.1:8000'
+from .settings import Settings
+from .utils.helper import create_and_full_index
 
 
 @dataclass
@@ -31,6 +33,11 @@ async def session():
 
 
 @pytest.fixture(scope='session')
+def settings() -> Settings:
+    return Settings()
+
+
+@pytest.fixture(scope='session')
 async def redis_client():
     redis = await aioredis.create_redis_pool(('localhost', 6379))
     await redis.flushall()
@@ -39,10 +46,10 @@ async def redis_client():
 
 
 @pytest.fixture
-def make_get_request(session):
+def make_get_request(session, settings):
     async def inner(method: str, params: dict = None) -> HTTPResponse:
         params = params or {}
-        url = SERVICE_URL + '/api/v1' + method  # ToDO поправить перед деплоем
+        url = settings.SERVICE_URL + settings.API_URL + method
         async with session.get(url, params=params) as response:
             return HTTPResponse(
                 body=await response.json(),
@@ -51,3 +58,16 @@ def make_get_request(session):
             )
 
     return inner
+
+
+@pytest.fixture
+async def create_film_environment(es_client, settings) -> None:
+    """ Cоздание индекса в es """
+
+    index = 'movies'
+    path = f"{settings.BASE_INDEX_PATH}{index}.json"
+    await create_and_full_index(es_client, path, index)
+    yield
+
+    # После завершения теста индекс удаляется
+    await es_client.indices.delete(index='movies', ignore=[http.HTTPStatus.BAD_REQUEST, http.HTTPStatus.NOT_FOUND])
