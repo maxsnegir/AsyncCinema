@@ -8,7 +8,7 @@ from elasticsearch import AsyncElasticsearch
 from multidict import CIMultiDictProxy
 
 from .settings import Settings
-from .utils.helper import create_and_full_index
+from .utils.helper import create_and_full_indexes
 
 
 @dataclass
@@ -61,13 +61,10 @@ def make_get_request(session, settings):
 
 
 @pytest.fixture
-async def create_film_environment(es_client, settings) -> None:
+async def create_test_data(es_client, settings) -> None:
     """ Cоздание индекса в es """
 
-    index = 'movies'
-    path = f"{settings.BASE_INDEX_PATH}{index}.json"
-    await create_and_full_index(es_client, path, index)
+    await create_and_full_indexes(es_client, settings)
     yield
-
-    # После завершения теста индекс удаляется
-    await es_client.indices.delete(index='movies', ignore=[http.HTTPStatus.BAD_REQUEST, http.HTTPStatus.NOT_FOUND])
+    for index in settings.INDEXES:
+        await es_client.indices.delete(index=index, ignore=[http.HTTPStatus.BAD_REQUEST, http.HTTPStatus.NOT_FOUND])

@@ -6,7 +6,7 @@ import pytest
 class TestFilm:
 
     @pytest.mark.asyncio
-    async def test_film_list_without_params(self, create_film_environment, make_get_request):
+    async def test_film_list_without_params(self, create_test_data, make_get_request):
         """Тест эндпоинта /film/"""
 
         response = await make_get_request('/film')
