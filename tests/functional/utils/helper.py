@@ -3,18 +3,24 @@ from typing import List, Generator
 
 from elasticsearch._async.helpers import async_bulk  # Noqa
 
-from .data_generator import generate_data
 
-
-async def create_and_full_index(es_client, path, index):
+async def create_and_full_indexes(es_client, settings):
     """Создаем индекс и заполняем тестовыми данными"""
 
-    with open(path) as f:
-        index_body = json.load(f)
+    for index in settings.INDEXES:
+        index_map_path = f"{settings.INDEX_MAP_PATH}{index}.json"
+        index_body = read_file(index_map_path)
+        await es_client.indices.create(index=index, body=index_body, ignore=400)
 
-    await es_client.indices.create(index=index, body=index_body, ignore=400)
-    docs = generate_data(index)()
-    await put_docs_to_es(es_client, docs, index)
+        test_docs_path = f"{settings.TEST_DATA_PATH}{index}.json"
+        test_docs = read_file(test_docs_path)
+        await put_docs_to_es(es_client, test_docs, index)
+
+
+def read_file(file_path: str):
+    with open(file_path) as f:
+        data = json.load(f)
+    return data
 
 
 async def put_docs_to_es(es_client, data, index):
