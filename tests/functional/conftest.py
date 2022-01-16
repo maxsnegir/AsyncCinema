@@ -21,7 +21,6 @@ class HTTPResponse:
 
 @pytest.fixture(scope="session")
 def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
