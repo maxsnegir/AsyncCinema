@@ -1,3 +1,4 @@
+import asyncio
 import http
 from dataclasses import dataclass
 
@@ -16,6 +17,14 @@ class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
+
+
+@pytest.fixture(scope="session")
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope='session')
@@ -60,7 +69,7 @@ def make_get_request(session, settings):
     return inner
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 async def create_test_data(es_client, settings) -> None:
     """ Cоздание индекса в es """
 

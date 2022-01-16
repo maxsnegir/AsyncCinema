@@ -8,11 +8,11 @@ async def create_and_full_indexes(es_client, settings):
     """Создаем индекс и заполняем тестовыми данными"""
 
     for index in settings.INDEXES:
-        index_map_path = f"{settings.INDEX_MAP_PATH}{index}.json"
+        index_map_path = settings.INDEX_MAP_PATH.joinpath(f"{index}.json")
         index_body = read_file(index_map_path)
         await es_client.indices.create(index=index, body=index_body, ignore=400)
 
-        test_docs_path = f"{settings.TEST_DATA_PATH}{index}.json"
+        test_docs_path = settings.TEST_DATA_PATH.joinpath(f"{index}.json")
         test_docs = read_file(test_docs_path)
         await put_docs_to_es(es_client, test_docs, index)
 

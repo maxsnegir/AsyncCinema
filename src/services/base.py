@@ -80,7 +80,7 @@ class BaseService:
         if query:
             body_query = body_query.query("multi_match", query=query, fields=self.search_fields)
         if filter_genre:
-            body_query = body_query.query('nested', path='genre', query=Q("match", genre__id=filter_genre))
+            body_query = body_query.query('nested', path='genre', query=Q("match", genre__uuid=filter_genre))
         if person_id:
             body_query = body_query.query(Q('nested', path='actors', query=Q("match", actors__uuid=person_id)) |
                                           Q('nested', path='directors', query=Q("match", directors__uuid=person_id)) |
