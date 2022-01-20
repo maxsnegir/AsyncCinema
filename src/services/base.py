@@ -34,13 +34,14 @@ class BaseService:
     async def get_list(self, **params):
         """Получаем список объектов"""
 
-        docs = await self._get_from_cache(params)
+        redis_key = ':'.join([str(value) for value in params.values()])
+        docs = await self._get_from_cache(redis_key)
         if not docs:
             body = self.get_body_query(**params)
             docs = await self.elastic.search(index=self.index, body=body)
             if not docs:
                 return []
-            await self._put_to_cache(params, docs)
+            await self._put_to_cache(redis_key, docs)
         return [self.model(**dict(doc['_source'])) for doc in docs['hits']['hits']]
 
     async def _get_from_elastic(self, instance_id: str) -> Optional[BaseModel]:
@@ -51,7 +52,7 @@ class BaseService:
             return
 
     async def _put_to_cache(self, key, value):
-        key = self.index + ":" + str(key)
+        key = self.index + ":" + key
         await self.redis.set(key, dumps(value), expire=CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_from_cache(self, key):

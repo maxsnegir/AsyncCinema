@@ -31,7 +31,7 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
 async def film_list(sort: str = Query("-imdb_rating", description='Параметр сортировки'),
                     page_size: int = Query(50, ge=1, lt=1000, description='Размер страницы'),
                     page_number: int = Query(1, ge=1, lt=1000, description='Номер страницы'),
-                    filter_genre: str = Query(None, description='Фильтр по жанру'),
+                    filter_genre: str = Query("", description='Фильтр по жанру'),
                     film_service: FilmService = Depends(get_film_service)) -> List[FilmShort]:
     films = await film_service.get_list(sort=sort, page_size=page_size, page_number=page_number,
                                         filter_genre=filter_genre)
