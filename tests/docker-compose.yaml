@@ -23,7 +23,7 @@ services:
       - "6379:6379"
 
   backend_api:
-    build: ../../src/.
+    build: ../src
     restart: always
     env_file:
       - test.env
@@ -32,3 +32,17 @@ services:
       - elasticsearch
     ports:
       - '8001:8000'
+
+  tests:
+    build: .
+    depends_on:
+      - elasticsearch
+      - redis
+      - backend_api
+    env_file: test.env
+    volumes:
+      - ../.:/tests
+    entrypoint: >
+      sh -c "python3 tests/functional/utils/wait_for_es.py
+      && python3 tests/functional/utils/wait_for_redis.py
+      && pytest -v tests/functional/src "
