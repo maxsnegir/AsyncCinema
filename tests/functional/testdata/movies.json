@@ -1,7 +1,7 @@
 [
   {
     "uuid": "b8c6e38d-505a-4bea-9845-26a7f72a1564",
-    "title": "Lorem ipsum dolor sit amet",
+    "title": "Star Wars: The Old Republic",
     "imdb_rating": 6.5,
     "description": "Lorem ipsum dolor sit amet",
     "genre": [
@@ -51,7 +51,7 @@
   },
   {
     "uuid": "41613b1b-38c2-43fa-a5c2-9c98fab33f34",
-    "title": "Lorem ipsum dolor sit amet",
+    "title": "Lord of Ring",
     "imdb_rating": 0.5,
     "description": "Lorem ipsum dolor sit amet",
     "genre": [

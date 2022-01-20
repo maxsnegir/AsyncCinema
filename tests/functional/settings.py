@@ -8,5 +8,9 @@ class Settings(BaseSettings):
     API_URL = "/api/v1"
     INDEX_MAP_PATH: Path = Field("tests/functional/testdata/es_schemas/")
     TEST_DATA_PATH: Path = Field("tests/functional/testdata/")
-    INDEXES = ("movies", "genres", "persons")
+    MOVIE_INDEX: str = "movies"
+    GENRE_INDEX: str = "genres"
+    PERSON_INDEX: str = "persons"
+
+    INDEXES = (MOVIE_INDEX, GENRE_INDEX, PERSON_INDEX)
     es_host: str = Field('http://127.0.0.1:9200', env='ELASTIC_HOST')
