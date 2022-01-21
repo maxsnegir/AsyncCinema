@@ -64,7 +64,7 @@ class TestPerson:
     async def test_person_by_id(self, create_test_data, make_get_request):
         "Тест эндпоинта /person/{person_id}"
 
-        existing_person = 'a5a8f573-3cee-4ccc-8a2b-91cb9f55250a'
+        existing_person = 'a2815390-07d6-46a5-942e-24819250f2cb'
         response = await make_get_request(f'/person/{existing_person}')
         assert response.status == HTTPStatus.OK, 'Неправильный статус ответа'
         assert isinstance(response.body, dict), 'Возвращается неправильный формат персонажа'
