@@ -8,6 +8,7 @@ def query_person_params() -> dict:
     """Дефолтные GET параметры для персонажей"""
 
     return {
+        "query": '',
         "page_size": 50,
         "page_number": 1,
     }
@@ -17,7 +18,7 @@ def query_person_params() -> dict:
 def redis_person_params(settings, query_person_params) -> str:
     return (
         settings.PERSON_INDEX
-        + ":None:"
+        + ":"
         + ":".join(str(value) for value in query_person_params.values())
     )
 
@@ -25,7 +26,7 @@ def redis_person_params(settings, query_person_params) -> str:
 class TestPerson:
     @pytest.mark.asyncio
     async def test_person_list_without_params(
-        self, create_test_data, make_get_request, redis_person_params, redis_client
+        self, create_test_data, make_get_request, redis_person_params, redis_client, query_person_params
     ):
         """Тест эндпоинта /person/search"""
         response = await make_get_request("/person/search")
