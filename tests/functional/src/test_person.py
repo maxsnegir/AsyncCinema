@@ -39,10 +39,8 @@ class TestPerson:
             "Запрос без параметров должен соответствовать запросу"
             "с параметрами по умолчанию"
         )
-        assert await redis_client.get(get_redis_key_by_params(
-            settings.PERSON_INDEX,
-            query_person_params
-            )),'Отсутствуют данные в redis'
+        #return index_name + ":" + ":".join([str(value) for value in params.values()])
+        assert await redis_client.get(settings.PERSON_INDEX + ":50:1"),'Отсутствуют данные в redis'
 
     @pytest.mark.asyncio
     async def test_person_page_number_param(
@@ -167,3 +165,22 @@ class TestPerson:
         assert (
             response_for_nonexistent_person.status == HTTPStatus.NOT_FOUND
         ), "Неправильный статус ответа"
+
+    @pytest.mark.asyncio
+    async def test_person_search(
+            self,
+            create_test_data,
+            make_get_request,
+            settings,
+            redis_client
+            ):
+        "Тест энпоинта /person/search"
+
+        response = await make_get_request(
+                '/person/search',
+                {'query': "FullName_98"}
+                )
+
+        assert response.status == HTTPStatus.OK, "Неправильный статус ответа"
+        assert len(response.body)==1, "Неправильное количество персонажей"
+        assert response.body[0]['uuid'] == "bddfebe2-abfb-4e2f-a49e-22b3d9818a2c"
