@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 import pytest
 
+from ..utils.helper import get_redis_key_by_params
+
 
 @pytest.fixture
 def query_person_params() -> dict:
@@ -16,7 +18,12 @@ def query_person_params() -> dict:
 class TestPerson:
     @pytest.mark.asyncio
     async def test_person_list_without_params(
-        self, create_test_data, make_get_request, query_person_params
+        self,
+        create_test_data,
+        make_get_request,
+        query_person_params,
+        redis_client,
+        settings
     ):
         """Тест эндпоинта /person/search"""
 
@@ -32,10 +39,19 @@ class TestPerson:
             "Запрос без параметров должен соответствовать запросу"
             "с параметрами по умолчанию"
         )
+        assert await redis_client.get(get_redis_key_by_params(
+            settings.PERSON_INDEX,
+            query_person_params
+            )),'Отсутствуют данные в redis'
 
     @pytest.mark.asyncio
     async def test_person_page_number_param(
-        self, create_test_data, make_get_request, query_person_params
+        self,
+        create_test_data,
+        make_get_request,
+        query_person_params,
+        settings,
+        redis_client
     ):
         """Тест параметра ?page_number"""
 
@@ -45,6 +61,11 @@ class TestPerson:
         assert response.status == HTTPStatus.OK, "Неправильный статус ответа"
         assert len(response.body) == 50, "Неправильное количество персонажей"
         assert isinstance(response.body, list), "Неправильный тип данных в ответе"
+
+        assert await redis_client.get(get_redis_key_by_params(
+            settings.PERSON_INDEX,
+            query_person_params
+            )),'Отсутствуют данные в redis'
 
         query_person_params["page_number"] = 1
         response_with_first_number = await make_get_request(
@@ -84,7 +105,12 @@ class TestPerson:
 
     @pytest.mark.asyncio
     async def test_person_page_size_param(
-        self, create_test_data, make_get_request, query_person_params
+        self,
+        create_test_data,
+        make_get_request,
+        query_person_params,
+        settings,
+        redis_client
     ):
         """Тест параметра ?page_size"""
 
@@ -92,6 +118,10 @@ class TestPerson:
         response = await make_get_request("/person/search", params=query_person_params)
         assert response.status == HTTPStatus.OK, "Неправильный статус ответа"
         assert len(response.body) == 51, "Неправильное количество персонажей"
+        assert await redis_client.get(get_redis_key_by_params(
+            settings.PERSON_INDEX,
+            query_person_params
+            )),'Отсутствуют данные в redis'
 
         query_person_params["page_size"] = 1_000_000
         response_with_big_page_size = await make_get_request(
@@ -111,7 +141,13 @@ class TestPerson:
         ), "Неправильный статус ответа для размера страницы со значением 0"
 
     @pytest.mark.asyncio
-    async def test_person_by_id(self, create_test_data, make_get_request):
+    async def test_person_by_id(
+            self,
+            create_test_data,
+            make_get_request,
+            settings,
+            redis_client
+            ):
         "Тест эндпоинта /person/{person_id}"
 
         existing_person = "a2815390-07d6-46a5-942e-24819250f2cb"
@@ -121,6 +157,8 @@ class TestPerson:
             response.body, dict
         ), "Возвращается неправильный формат персонажа"
         assert response.body.get("uuid") is not None, "У персонажа отсутствует uuid"
+        assert await redis_client.get(settings.PERSON_INDEX + ":" + existing_person), \
+                'Отсутствуют данные в redis'
 
         nonexistent_person = "404aaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
         response_for_nonexistent_person = await make_get_request(
