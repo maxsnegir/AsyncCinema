@@ -9,8 +9,6 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     env_file:
       - test.env
-    ports:
-      - "9200:9200"
 
   redis:
     restart: unless-stopped
@@ -19,8 +17,6 @@ services:
       - test.env
     command:
       - redis-server
-    ports:
-      - "6379:6379"
 
   backend_api:
     build: ../src
@@ -30,8 +26,6 @@ services:
     depends_on:
       - redis
       - elasticsearch
-    ports:
-      - '8001:8000'
 
   tests:
     build: .

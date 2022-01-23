@@ -76,4 +76,3 @@ async def create_test_data(es_client, settings) -> None:
     yield
     for index in settings.INDEXES:
         await es_client.indices.delete(index=index, ignore=[http.HTTPStatus.BAD_REQUEST, http.HTTPStatus.NOT_FOUND])
-

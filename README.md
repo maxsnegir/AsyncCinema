@@ -42,5 +42,9 @@ docker-compose up --build
 
 Проект запущен, документация API доступна по адресу http://localhost:8000/api/openapi
 
-
-
+### Запуск тестов
+1. Перейдите в директорию tests
+2. Выполните команду:
+```bash
+docker-compose up --build tests
+```
