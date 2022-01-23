@@ -12,7 +12,7 @@ from services.person import PersonService, get_person_service
 router = APIRouter()
 
 
-@router.get('/search', description='Поиск по персонам.')
+@router.get('/search', description='Полнотекстовый поиск по по персонам.', summary="Поиск персон")
 async def person_search(query: str = Query('', description='Поисковый запрос'),
                         page_size: int = Query(50, ge=1, lt=1000, description='Размер страницы'),
                         page_number: int = Query(1, ge=1, lt=1000, description='Номер страницы'),
