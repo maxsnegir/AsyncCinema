@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.get('/search', description='Поиск по персонам.')
-async def person_search(query: str = Query(None, description='Поисковый запрос'),
+async def person_search(query: str = Query('', description='Поисковый запрос'),
                         page_size: int = Query(50, ge=1, lt=1000, description='Размер страницы'),
                         page_number: int = Query(1, ge=1, lt=1000, description='Номер страницы'),
                         person_service: PersonService = Depends(get_person_service)) -> List[Person]:
