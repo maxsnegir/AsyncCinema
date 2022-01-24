@@ -13,7 +13,7 @@ CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 class BaseService:
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index):
+    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index: str):
         self.redis = redis
         self.elastic = elastic
         self.index = index
