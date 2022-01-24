@@ -19,7 +19,7 @@ services:
       - redis-server
 
   backend_api:
-    build: ../src
+    image: backend_api_image
     restart: always
     env_file:
       - test.env
