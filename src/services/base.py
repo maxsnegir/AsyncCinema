@@ -13,7 +13,7 @@ CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 class BaseService:
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index):
+    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index: str):
         self.redis = redis
         self.elastic = elastic
         self.index = index
@@ -51,12 +51,16 @@ class BaseService:
         except ES_NotFoundError:
             return
 
+    def redis_key(self, key):
+        return f'{self.index}:{key}'
+
     async def _put_to_cache(self, key, value):
-        key = self.index + ":" + key
-        await self.redis.set(key, dumps(value), expire=CACHE_EXPIRE_IN_SECONDS)
+        index_with_key = self.redis_key(key)
+        await self.redis.set(index_with_key, dumps(value), expire=CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_from_cache(self, key):
-        data = await self.redis.get(self.index + ":" + str(key))
+        index_with_key = self.redis_key(key)
+        data = await self.redis.get(index_with_key)
         if data:
             return loads(data)
 
