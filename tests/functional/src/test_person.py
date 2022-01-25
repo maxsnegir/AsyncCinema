@@ -52,12 +52,12 @@ class TestPerson:
         assert isinstance(response_with_first_number.body, list), err.WRONG_RESPONSE_BODY
         assert response.body != response_with_first_number.body, "Значения 1-ой и 2-ой страницы не должны совпадать"
 
-    async def test_person_page_number_param_page1M(self, create_test_data, make_get_request, query_person_params):
+    async def test_person_large_page_number_param(self, create_test_data, make_get_request, query_person_params):
         query_person_params["page_number"] = 1_000_000
         response_with_big_page_number = await make_get_request("/person/search", params=query_person_params)
         assert response_with_big_page_number.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_GTE_PAGE_SIZE
 
-    async def test_person_page_number_param_page0(self, create_test_data, make_get_request, query_person_params):
+    async def test_person_zero_page_number_param(self, create_test_data, make_get_request, query_person_params):
         query_person_params["page_number"] = 0
         response_with_zero_page_number = await make_get_request("/person/search", params=query_person_params)
         assert response_with_zero_page_number.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_LTE_PAGE_SIZE
@@ -73,12 +73,12 @@ class TestPerson:
         assert await redis_client.get(
             get_redis_key_by_params(settings.PERSON_INDEX, query_person_params)), err.REDIS_404
 
-    async def test_person_page_size_param_size1M(self, create_test_data, make_get_request, query_person_params):
+    async def test_person_large_page_size_param(self, create_test_data, make_get_request, query_person_params):
         query_person_params["page_size"] = 1_000_000
         response_with_big_page_size = await make_get_request("/person/search", params=query_person_params)
         assert response_with_big_page_size.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_GTE_PAGE_SIZE
 
-    async def test_person_page_size_param_size0(self, create_test_data, make_get_request, query_person_params):
+    async def test_person_zero_page_size_param(self, create_test_data, make_get_request, query_person_params):
         query_person_params["page_size"] = 0
         response_with_zero_page_size = await make_get_request("/person/search", params=query_person_params)
         assert response_with_zero_page_size.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_LTE_PAGE_SIZE
