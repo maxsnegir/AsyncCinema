@@ -91,7 +91,7 @@ class TestPerson:
         assert isinstance(response.body, dict), err.WRONG_RESPONSE_BODY
 
         assert response.body.get("uuid") is not None, "У персонажа отсутствует uuid"
-        assert await redis_client.get(settings.PERSON_INDEX + ":" + existing_person), err.REDIS_404
+        assert await redis_client.get(f"{settings.PERSON_INDEX}:{existing_person}"), err.REDIS_404
 
     async def test_person_by_id_nonexistent(self, create_test_data, make_get_request):
         nonexistent_person = "40415390-07d6-46a5-942e-24819250f2cb"

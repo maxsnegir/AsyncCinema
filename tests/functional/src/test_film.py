@@ -143,7 +143,7 @@ class TestFilm:
         assert response.status == HTTPStatus.OK, err.WRONG_STATUS
         assert isinstance(response.body, dict), err.WRONG_RESPONSE_BODY
         assert response.body.get("uuid") is not None, 'У фильма отсутствует uuid'
-        assert await redis_client.get(settings.MOVIE_INDEX + ":" + existing_film), err.REDIS_404
+        assert await redis_client.get(f"{settings.MOVIE_INDEX}:{existing_film}"), err.REDIS_404
 
     async def test_film_by_nonexistent_id(self, create_test_data, make_get_request):
         """Тест эндопинта film/{film_id} с несуществующим фильмом"""

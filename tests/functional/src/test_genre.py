@@ -5,7 +5,8 @@ import pytest
 from ..utils.constants import TestErrors as err
 from ..utils.helper import get_redis_key_by_params
 
-pytestmark = pytest.mark.asyncio
+pytestmark = pytest.mark.asyncio  # Noqa
+
 
 @pytest.fixture
 def query_genre_params() -> dict:
@@ -70,7 +71,7 @@ class TestGenre:
         assert response_with_zero_page.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_LTE_PAGE_SIZE
 
     async def test_genre_page_size_param(self, create_test_data, make_get_request, query_genre_params, redis_client,
-                                       settings):
+                                         settings):
         """Тест параметра ?page_size"""
 
         current_schema = "/genre"
@@ -104,9 +105,9 @@ class TestGenre:
         assert response.status == HTTPStatus.OK, err.WRONG_STATUS
         assert isinstance(response.body, dict), err.WRONG_RESPONSE_BODY
         assert response.body.get("uuid") is not None, 'У жанра отсутствует uuid'
-        assert await redis_client.get(settings.GENRE_INDEX + ":" + existing_genre), err.REDIS_404
+        assert await redis_client.get(f"{settings.GENRE_INDEX}:{existing_genre}"), err.REDIS_404
 
-    async def test_genre_by_nonexisntent_id(self, make_get_request):
+    async def test_genre_by_nonexistent_id(self, make_get_request):
         nonexistent_film = "11111f68-643e-4ddd-8f57-84b62538081a"
         response_for_nonexistent_film = await make_get_request(f'/film/{nonexistent_film}')
         assert response_for_nonexistent_film.status == HTTPStatus.NOT_FOUND, err.WRONG_STATUS

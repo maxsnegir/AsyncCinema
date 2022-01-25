@@ -56,4 +56,4 @@ async def wait_for_load(es_client, index):
 def get_redis_key_by_params(index_name: str, params: dict) -> str:
     """ Формируем redis key в формате es_index:get_param1:get_param_2...get_param_n"""
 
-    return index_name + ":" + ":".join([str(value) for value in params.values()])
+    return f"{index_name}:" + ":".join([str(value) for value in params.values()])
