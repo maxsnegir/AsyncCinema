@@ -5,6 +5,7 @@ import pytest
 from ..utils.constants import TestErrors as err
 from ..utils.helper import get_redis_key_by_params
 
+pytestmark = pytest.mark.asyncio
 
 @pytest.fixture
 def query_genre_params() -> dict:
@@ -18,7 +19,6 @@ def query_genre_params() -> dict:
 
 class TestGenre:
 
-    @pytest.mark.asyncio
     async def test_genre_list_without_params(self, create_test_data, redis_client, make_get_request, settings,
                                              query_genre_params):
         """Тест эндпоинта /genre"""
@@ -36,7 +36,6 @@ class TestGenre:
         assert response.body == response_with_page.body, "Запрос без параметров должен соответствовать запросу " \
                                                          "с параметрами по умолчанию"
 
-    @pytest.mark.asyncio
     async def test_genre_page_number_param(self, create_test_data, make_get_request, query_genre_params, redis_client,
                                            settings):
         """Тест параметра ?page_number"""
@@ -58,16 +57,19 @@ class TestGenre:
         assert isinstance(response_with_first_number.body, list), err.WRONG_RESPONSE_BODY
         assert response.body != response_with_first_number.body, 'Значения 1-ой и 2-ой страницы не должны совпадать'
 
+    async def test_genre_large_page_number_param(self, create_test_data, make_get_request, query_genre_params):
+        current_schema = "/genre"
         query_genre_params["page_number"] = 10 ** 6
         response_with_big_page_number = await make_get_request(current_schema, params=query_genre_params)
         assert response_with_big_page_number.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_GTE_PAGE_SIZE
 
+    async def test_genre_zero_page_number_param(self, create_test_data, make_get_request, query_genre_params):
+        current_schema = "/genre"
         query_genre_params["page_number"] = 0
         response_with_zero_page = await make_get_request(current_schema, params=query_genre_params)
         assert response_with_zero_page.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_LTE_PAGE_SIZE
 
-    @pytest.mark.asyncio
-    async def test_fim_page_size_param(self, create_test_data, make_get_request, query_genre_params, redis_client,
+    async def test_genre_page_size_param(self, create_test_data, make_get_request, query_genre_params, redis_client,
                                        settings):
         """Тест параметра ?page_size"""
 
@@ -80,15 +82,18 @@ class TestGenre:
         assert await redis_client.get(
             get_redis_key_by_params(settings.GENRE_INDEX, query_genre_params)), err.REDIS_404
 
+    async def test_genre_zero_page_size_param(self, create_test_data, make_get_request, query_genre_params):
+        current_schema = "/genre"
         query_genre_params["page_size"] = 0
         response_with_zero_page_size = await make_get_request(current_schema, params=query_genre_params)
         assert response_with_zero_page_size.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_LTE_PAGE_SIZE
 
+    async def test_genre_large_page_size_param(self, create_test_data, make_get_request, query_genre_params):
+        current_schema = "/genre"
         query_genre_params["page_size"] = 10 ** 6
         response_with_large_page_size = await make_get_request(current_schema, params=query_genre_params)
         assert response_with_large_page_size.status == HTTPStatus.UNPROCESSABLE_ENTITY, err.WRONG_GTE_PAGE_SIZE
 
-    @pytest.mark.asyncio
     async def test_genre_by_id(self, make_get_request, redis_client, settings):
         """Тест эндопинта genre/{genre_id}"""
 
@@ -101,6 +106,7 @@ class TestGenre:
         assert response.body.get("uuid") is not None, 'У жанра отсутствует uuid'
         assert await redis_client.get(settings.GENRE_INDEX + ":" + existing_genre), err.REDIS_404
 
+    async def test_genre_by_nonexisntent_id(self, make_get_request):
         nonexistent_film = "11111f68-643e-4ddd-8f57-84b62538081a"
         response_for_nonexistent_film = await make_get_request(f'/film/{nonexistent_film}')
         assert response_for_nonexistent_film.status == HTTPStatus.NOT_FOUND, err.WRONG_STATUS
