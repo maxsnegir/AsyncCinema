@@ -51,18 +51,17 @@ class BaseService:
         except ES_NotFoundError:
             return
 
-    def redis_key(self, key):
-        return f'{self.index}:{key}'
-
     async def _put_to_cache(self, key, value):
-        index_with_key = self.redis_key(key)
-        await self.redis.set(index_with_key, dumps(value), expire=CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(self.form_redis_key(key), dumps(value), expire=CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_from_cache(self, key):
-        index_with_key = self.redis_key(key)
-        data = await self.redis.get(index_with_key)
+        data = await self.redis.get(self.form_redis_key(key))
         if data:
             return loads(data)
+
+    def form_redis_key(self, key):
+        """Формируем ключ для redis"""
+        return f'{self.index}:{str(key)}'
 
     def get_body_query(self, **params) -> dict:
         """Формируем тело запроса в elastic"""

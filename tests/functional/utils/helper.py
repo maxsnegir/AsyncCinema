@@ -1,7 +1,8 @@
 import json
-from typing import List, Generator
 from asyncio import sleep as asyncio_sleep
+from typing import List, Generator
 
+import aiofiles
 from elasticsearch._async.helpers import async_bulk  # Noqa
 
 
@@ -10,17 +11,18 @@ async def create_and_fill_indexes(es_client, settings):
 
     for index in settings.INDEXES:
         index_map_path = settings.INDEX_MAP_PATH.joinpath(f"{index}.json")
-        index_body = read_file(index_map_path)
+        index_body = await read_file(index_map_path)
         await es_client.indices.create(index=index, body=index_body, ignore=400)
 
         test_docs_path = settings.TEST_DATA_PATH.joinpath(f"{index}.json")
-        test_docs = read_file(test_docs_path)
+        test_docs = await read_file(test_docs_path)
         await put_docs_to_es(es_client, test_docs, index)
 
 
-def read_file(file_path: str):
-    with open(file_path) as f:
-        data = json.load(f)
+async def read_file(file_path: str):
+    """Функция для чтения файлов"""
+    async with aiofiles.open(file_path) as f:
+        data = json.loads(await f.read())
     return data
 
 

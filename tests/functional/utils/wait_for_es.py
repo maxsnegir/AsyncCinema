@@ -5,8 +5,7 @@ from time import sleep, time
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 
-
-WAIT_TIME=120
+WAIT_TIME = 60
 
 load_dotenv()
 logger = logging.getLogger()
@@ -15,12 +14,12 @@ logger = logging.getLogger()
 def wait_for_es(es_client: Elasticsearch) -> None:
     """ Ждем пока es станет доступным """
 
+    logger.info("Waiting for Elasticsearch")
     waiting_start = time()
     while not es_client.ping():
-        logger.info("Waiting for Elasticsearch")
         sleep(2)
-        if (time() - waiting_start) > WAIT_TIME:
-            logger.info("Elasticsearch connection timeout")
+        if time() - waiting_start > WAIT_TIME:
+            logger.error("Elasticsearch connection timeout")
             raise ConnectionError
     logger.info("Elasticsearch connected")
 

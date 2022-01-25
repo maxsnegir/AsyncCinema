@@ -5,8 +5,7 @@ import pytest
 from ..utils.constants import TestErrors as err
 from ..utils.helper import get_redis_key_by_params
 
-# All test coroutines will be treated as marked
-pytestmark = pytest.mark.asyncio
+pytestmark = pytest.mark.asyncio  # Noqa
 
 
 @pytest.fixture
@@ -70,8 +69,8 @@ class TestPerson:
         response = await make_get_request("/person/search", params=query_person_params)
         assert response.status == HTTPStatus.OK, err.WRONG_STATUS
         assert len(response.body) == 51, err.WRONG_LEN
-        assert await redis_client.get(
-            get_redis_key_by_params(settings.PERSON_INDEX, query_person_params)), err.REDIS_404
+        assert await redis_client.get(get_redis_key_by_params(
+            settings.PERSON_INDEX, query_person_params)), err.REDIS_404
 
     async def test_person_large_page_size_param(self, create_test_data, make_get_request, query_person_params):
         query_person_params["page_size"] = 1_000_000
