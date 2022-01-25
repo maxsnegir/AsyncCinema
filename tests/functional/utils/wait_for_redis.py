@@ -1,9 +1,12 @@
 import logging
 import os
-from time import sleep
+from time import sleep, time
 
 from dotenv import load_dotenv
 from redis import Redis, exceptions
+
+
+WAIT_TIME = 120
 
 load_dotenv()
 logger = logging.getLogger()
@@ -13,7 +16,12 @@ def wait_for_redis(redis_client: Redis) -> None:
     """ Ждем пока redis станет доступным """
 
     logger.info("Waiting for Redis")
+    waiting_start = time()
     while True:
+        logger.info("Waiting for Redis")
+        if (time() - waiting_start) > WAIT_TIME:
+            logger.info("Redis connection timeout")
+            raise ConnectionError
         try:
             redis_client.ping()
         except exceptions.ConnectionError:

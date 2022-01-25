@@ -1,10 +1,11 @@
 import json
 from typing import List, Generator
+from asyncio import sleep as asyncio_sleep
 
 from elasticsearch._async.helpers import async_bulk  # Noqa
 
 
-async def create_and_full_indexes(es_client, settings):
+async def create_and_fill_indexes(es_client, settings):
     """Создаем индекс и заполняем тестовыми данными"""
 
     for index in settings.INDEXES:
@@ -47,6 +48,7 @@ async def wait_for_load(es_client, index):
     while not items_count:
         index_data = await es_client.count(index=index)
         items_count = index_data.get("count")
+        await asyncio_sleep(0.1)
 
 
 def get_redis_key_by_params(index_name: str, params: dict) -> str:

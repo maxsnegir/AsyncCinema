@@ -9,7 +9,7 @@ from elasticsearch import AsyncElasticsearch
 from multidict import CIMultiDictProxy
 
 from .settings import Settings
-from .utils.helper import create_and_full_indexes
+from .utils.helper import create_and_fill_indexes
 
 
 @dataclass
@@ -72,7 +72,7 @@ def make_get_request(session, settings):
 async def create_test_data(es_client, settings) -> None:
     """ Cоздание индекса в es """
 
-    await create_and_full_indexes(es_client, settings)
+    await create_and_fill_indexes(es_client, settings)
     yield
     for index in settings.INDEXES:
         await es_client.indices.delete(index=index, ignore=[http.HTTPStatus.BAD_REQUEST, http.HTTPStatus.NOT_FOUND])
