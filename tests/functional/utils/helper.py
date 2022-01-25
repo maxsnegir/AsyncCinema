@@ -4,7 +4,7 @@ from typing import List, Generator
 from elasticsearch._async.helpers import async_bulk  # Noqa
 
 
-async def create_and_full_indexes(es_client, settings):
+async def create_and_fill_indexes(es_client, settings):
     """Создаем индекс и заполняем тестовыми данными"""
 
     for index in settings.INDEXES:
