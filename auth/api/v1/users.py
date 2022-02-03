@@ -26,7 +26,7 @@ class UserRegister(Resource):
         except IntegrityError:
             abort(HTTPStatus.BAD_REQUEST, message="User already exists")
 
-        return make_response(jsonify(login=user.login)), HTTPStatus.CREATED
+        return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
 
 
 class UserLogin(Resource):
