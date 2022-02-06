@@ -3,6 +3,7 @@ import uuid
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.security import check_password_hash
+from flask_security import RoleMixin
 
 from db import db
 
@@ -39,7 +40,7 @@ class User(TimeStampModel, db.Model, UserMixin):
         return user
 
 
-class Role(TimeStampModel, db.Model):
+class Role(db.Model, RoleMixin, TimeStampModel):
     __tablename__ = 'roles'
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
