@@ -48,3 +48,21 @@ class Role(TimeStampModel, db.Model):
 
     def __repr__(self):
         return f'<Role {self.name}>'
+
+
+class UserAuthorizations(TimeStampModel, db.Model):
+    __tablename__ = 'authorizations'
+
+    id = db.Column(UUID(as_uuid=True),
+                   primary_key=True,
+                   default=uuid.uuid4,
+                   unique=True,
+                   nullable=False)
+
+    user_id = db.Column(UUID(as_uuid=True),
+                        nullable=False)
+
+    user_agent = db.Column(db.String, nullable=False)
+    user_ip = db.Column(db.String)
+    user_geo = db.Column(db.String)
+
