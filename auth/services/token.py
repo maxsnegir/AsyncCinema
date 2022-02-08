@@ -20,20 +20,26 @@ class TokenService:
         return access_token, refresh_token
 
     @staticmethod
-    def revoke_token(token, user_id):
-        token_storage.set_revoked_refresh_token(token)
-        token_storage.delete_refresh_token(user_id)
+    def revoke_token(jwt):
+        jti = jwt["jti"]
+        identity = jwt["sub"]
+        token_storage.set_revoked_refresh_token(jti)
+        token_storage.delete_refresh_token(identity)
 
     @staticmethod
-    def validate_access_token(user_id):
-        token = token_storage.get_token(user_id)
+    def validate_access_token(jwt):
+        identity = jwt["sub"]
+        token = token_storage.get_token(identity)
         if not token:
             return False
         return True
 
     @staticmethod
-    def validate_refresh_token(user_id, token_jti):
-        token = token_storage.get_token(user_id)
-        if not token or token != token_jti:
+    def validate_refresh_token(jwt):
+        jti = jwt["jti"]
+        identity = jwt["sub"]
+
+        token = token_storage.get_token(identity)
+        if not token or token != jti:
             return False
         return True

@@ -11,7 +11,8 @@ from db import db
 from db.datastore import user_datastore
 from db.db_models import User
 from services.token import TokenService
-from .parsers import register_parser, login_parser
+from .parsers import register_parser, login_parser, change_password_parser, change_user_data_parser
+from email_validator import validate_email, EmailNotValidError
 
 
 class UserRegister(Resource):
@@ -20,11 +21,18 @@ class UserRegister(Resource):
         args = register_parser.parse_args()
         password = args.get('password')
         args["password"] = generate_password_hash(password)
+        email = args["email"]
+        try:
+            valid = validate_email(email)
+            args["email"] = valid.email
+        except EmailNotValidError as e:
+            abort(HTTPStatus.BAD_REQUEST, message=str(e))
+
         try:
             user = user_datastore.create_user(**args)
             db.session.commit()
         except IntegrityError:
-            abort(HTTPStatus.BAD_REQUEST, message="User already exists")
+            abort(HTTPStatus.BAD_REQUEST, message="User with current login or email already exists")
 
         return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
 
@@ -49,13 +57,9 @@ class UserLogout(Resource):
     @jwt_required()
     def post(self):
         jwt = get_jwt()
-        jti = jwt["jti"]
-        identity = jwt["sub"]
         token_service = TokenService()
 
-        if not token_service.validate_access_token(identity):
-            abort(HTTPStatus.UNAUTHORIZED, message="You are not login")
-        token_service.revoke_token(jti, identity)
+        token_service.revoke_token(jwt)
         return make_response(jsonify(msg="Access token revoked"), HTTPStatus.OK)
 
 
@@ -64,14 +68,13 @@ class RefreshToken(Resource):
     @jwt_required(refresh=True)
     def post(self):
         jwt = get_jwt()
-        jti = jwt["jti"]
         identity = jwt["sub"]
 
         token_service = TokenService()
-        if not token_service.validate_refresh_token(identity, jti):
+        if not token_service.validate_refresh_token(jwt):
             abort(HTTPStatus.BAD_REQUEST, message="Wrong refresh token")
 
-        token_service.revoke_token(jti, identity)
+        token_service.revoke_token(jwt)
         access_token, refresh_token = token_service.get_jwt_tokens(identity)
         return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), HTTPStatus.OK)
 
@@ -82,6 +85,66 @@ class UserInfo(Resource):
     def get(self):
         return jsonify(
             id=current_user.id,
-            password=current_user.password,  # Для примера
+            password=current_user.password,  # ToDo удалить
             login=current_user.login,
+            email=current_user.email,
+            roles=current_user.roles
         )
+
+
+class UserChangePassword(Resource):
+    """Смена пароля пользователя"""
+
+    @jwt_required()
+    def post(self):
+        jwt = get_jwt()
+        token_service = TokenService()
+
+        args = change_password_parser.parse_args()
+        current_password = args["current_password"]
+        new_password = args["new_password"]
+
+        if not current_user.check_password(current_password):
+            abort(HTTPStatus.BAD_REQUEST, message="Invalid current password")
+
+        if current_password == new_password:
+            abort(HTTPStatus.BAD_REQUEST, message="Passwords must didn't match")
+
+        current_user.password = generate_password_hash(new_password)
+        db.session.commit()
+
+        token_service.revoke_token(jwt)
+        return make_response(jsonify(message='Password successfully changed, please login again'), HTTPStatus.OK)
+
+
+class UserDataChange(Resource):
+
+    @jwt_required()
+    def post(self):
+        args = change_user_data_parser.parse_args()
+        login = args["login"]
+        email = args["email"]
+
+        if not login and not email:
+            abort(HTTPStatus.BAD_REQUEST, message='Enter login or email to change')
+
+        if login:
+            current_user.login = login
+        if email:
+            try:
+                validate_email(email)
+            except EmailNotValidError as e:
+                abort(HTTPStatus.BAD_REQUEST, message=str(e))
+            current_user.email = email
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            abort(HTTPStatus.BAD_REQUEST, message='Login or email already exists')
+
+        return make_response(jsonify(
+            id=current_user.id,
+            password=current_user.password,  # ToDo удалить
+            login=current_user.login,
+            email=current_user.email,
+            roles=current_user.roles), HTTPStatus.OK)
