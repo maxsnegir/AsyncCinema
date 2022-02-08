@@ -36,7 +36,6 @@ class UserRegister(Resource):
 
         return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
 
-
 class UserLogin(Resource):
 
     def post(self):
