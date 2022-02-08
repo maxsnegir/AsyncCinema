@@ -9,7 +9,7 @@ from flask_jwt_extended import current_user, verify_jwt_in_request
 from flask_restful import Resource, abort
 from sqlalchemy.exc import IntegrityError
 
-from .parsers import assign_role_parser, create_role_parser, get_role_parser, patch_role_parser
+from .parsers import assign_role_parser, create_role_parser, patch_role_parser
 
 
 def role_required(required_role: str):
@@ -17,8 +17,7 @@ def role_required(required_role: str):
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
-            role = required_role
-            if role in current_user.roles:
+            if required_role in current_user.roles:
                 return fn(*args, **kwargs)
             else:
                 return abort(HTTPStatus.FORBIDDEN, message="Admins only!")
@@ -33,42 +32,51 @@ class UserRole(Resource):
     def post(self):
         args = create_role_parser.parse_args()
         try:
-            user_datastore.create_role(**args)
+            role = user_datastore.create_role(**args)
             db.session.commit()
+            return make_response(jsonify(role=role.name), HTTPStatus.CREATED)
         except IntegrityError:
-            abort(HTTPStatus.BAD_REQUEST, message="Role already exists")
-
-        return HTTPStatus.CREATED
-
+            return abort(HTTPStatus.BAD_REQUEST, message="Role already exists")
 
     @role_required("admin")
-    def get(self):
-        args = get_role_parser.parse_args()
-        name = args.get('name')
-        if name:
-            role = Role.get_role_by_name(name)
+    def get(self, role_id=None):
+        if role_id:
+            role = Role.get_role_by_id(role_id)
             return jsonify(name=role.name, description=role.description)
         else:
-            return jsonify({role.name:role.description for role in Role.get_all()})
+            return make_response(
+                jsonify(
+                    {
+                        role.name: {
+                            "id": str(role.id),
+                            "description": role.description,
+                        }
+                        for role in Role.get_all_roles()
+                    }
+                ),
+                200,
+            )
 
     @role_required("admin")
-    def patch(self):
+    def patch(self, role_id):
         args = patch_role_parser.parse_args()
-        _id = args.get('id')
-        _name = args.get('name')
-        description = args.get('description')
-        if _id:
-            role = Role.get_role_by_id(_id)
-            role.name = _name
-            role.description = description
-            db.session.commit()
-            return make_response(jsonify({"message":"role updated"}), 200)
+        name = args.get("name")
+        description = args.get("description")
+        role = Role.get_role_by_id(role_id)
+        role.name = name
+        role.description = description
+        db.session.commit()
+        return make_response(jsonify({"message": "role updated"}), 200)
 
-        if _name:
-            role = Role.get_role_by_name(_name)
-            role.description = description
-            db.session.commit()
-            return make_response(jsonify({"message":"role updated"}), 200)
+    @role_required("admin")
+    def delete(self, role_id):
+        if role_id:
+            if role := Role.get_role_by_id(role_id):
+                db.session.delete(role)
+                db.session.commit()
+                return make_response(jsonify(message="Role deleted"), 204)
+            else:
+                return make_response(jsonify(message="role not found"), 404)
 
 
 class AssignRole(Resource):

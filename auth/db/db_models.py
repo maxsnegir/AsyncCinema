@@ -10,26 +10,39 @@ from db import db
 
 class TimeStampModel:
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
-    updated_at = db.Column(db.TIMESTAMP, server_default=db.func.now(), onupdate=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.TIMESTAMP, server_default=db.func.now(), onupdate=db.func.current_timestamp()
+    )
 
 
-user_roles = db.Table('user_roles', db.metadata,
-                      db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id")),
-                      db.Column("role_id", UUID(as_uuid=True), db.ForeignKey("roles.id")))
+user_roles = db.Table(
+    "user_roles",
+    db.metadata,
+    db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id")),
+    db.Column("role_id", UUID(as_uuid=True), db.ForeignKey("roles.id")),
+)
 
 
 class User(TimeStampModel, db.Model, UserMixin):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = db.Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     login = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=True)
     active = db.Column(db.Boolean())
-    roles = db.relationship('Role', secondary=user_roles, backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship(
+        "Role", secondary=user_roles, backref=db.backref("users", lazy="dynamic")
+    )
 
     def __repr__(self):
-        return f'<User {self.login}>'
+        return f"<User {self.login}>"
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -41,19 +54,24 @@ class User(TimeStampModel, db.Model, UserMixin):
 
 
 class Role(db.Model, RoleMixin, TimeStampModel):
-    __tablename__ = 'roles'
+    __tablename__ = "roles"
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = db.Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     name = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String, nullable=True)
 
     def __repr__(self):
-        return f'<Role {self.name}>'
+        return f"<Role {self.name}>"
 
     @staticmethod
     def get_role_by_id(role_id: UUID):
-        role = Role.query.get(role_id)
-        #role = Role.query.filter(id=role_id)
+        role = Role.query.filter_by(id=role_id).one_or_none()
         return role
 
     @staticmethod
@@ -62,6 +80,6 @@ class Role(db.Model, RoleMixin, TimeStampModel):
         return role
 
     @staticmethod
-    def get_all():
+    def get_all_roles():
         roles = Role.query.all()
         return roles
