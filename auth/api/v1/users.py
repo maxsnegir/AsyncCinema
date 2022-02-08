@@ -23,10 +23,10 @@ class UserRegister(Resource):
         try:
             user = user_datastore.create_user(**args)
             db.session.commit()
+            return make_response(jsonify(login=user.login)), HTTPStatus.CREATED
         except IntegrityError:
-            abort(HTTPStatus.BAD_REQUEST, message="User already exists")
+            return abort(HTTPStatus.BAD_REQUEST, message="User already exists")
 
-        return make_response(jsonify(login=user.login)), HTTPStatus.CREATED
 
 
 class UserLogin(Resource):

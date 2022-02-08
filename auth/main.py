@@ -5,10 +5,14 @@ from db import init_db, db
 from db.redis import init_redis
 from db.datastore import init_datastore
 from jwt_manager import init_jwt
+from api.commands import cmd
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'SECRET_KEY'
 app.config["FLASK_APP"] = "main:app"
+
+app.register_blueprint(cmd)
 
 init_db(app)
 init_redis(app)
