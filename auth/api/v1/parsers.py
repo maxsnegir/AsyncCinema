@@ -9,9 +9,17 @@ login_parser = reqparse.RequestParser()
 login_parser.add_argument('login', type=str, required=True, help='Login is required')
 login_parser.add_argument('password', type=str, required=True, help='Password is required')
 
-role_parser = reqparse.RequestParser()
-role_parser.add_argument('name', type=str, required=True, help='Role name is required')
-role_parser.add_argument('description', type=str, required=False, help='Role description isrequired')
+create_role_parser = reqparse.RequestParser()
+create_role_parser.add_argument('name', type=str, required=True, help='Role name is required')
+create_role_parser.add_argument('description', type=str, required=False)
+
+patch_role_parser = reqparse.RequestParser()
+patch_role_parser.add_argument('id', type=str, required=False)
+patch_role_parser.add_argument('name', type=str, required=False)
+patch_role_parser.add_argument('description', type=str, required=False)
+
+get_role_parser = reqparse.RequestParser()
+get_role_parser.add_argument('name', type=str, required=False)
 
 assign_role_parser = reqparse.RequestParser()
 assign_role_parser.add_argument('login', type=str, required=True, help='User login required')

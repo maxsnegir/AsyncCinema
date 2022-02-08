@@ -49,3 +49,19 @@ class Role(db.Model, RoleMixin, TimeStampModel):
 
     def __repr__(self):
         return f'<Role {self.name}>'
+
+    @staticmethod
+    def get_role_by_id(role_id: UUID):
+        role = Role.query.get(role_id)
+        #role = Role.query.filter(id=role_id)
+        return role
+
+    @staticmethod
+    def get_role_by_name(name: str):
+        role = Role.query.filter_by(name=name).one_or_none()
+        return role
+
+    @staticmethod
+    def get_all():
+        roles = Role.query.all()
+        return roles

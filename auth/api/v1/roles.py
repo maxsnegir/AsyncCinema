@@ -3,13 +3,13 @@ from http import HTTPStatus
 
 from db import db
 from db.datastore import user_datastore
-from db.db_models import User
-from flask import jsonify
-from flask_jwt_extended import current_user, jwt_required, verify_jwt_in_request
+from db.db_models import User, Role
+from flask import jsonify, make_response
+from flask_jwt_extended import current_user, verify_jwt_in_request
 from flask_restful import Resource, abort
 from sqlalchemy.exc import IntegrityError
 
-from .parsers import assign_role_parser, role_parser
+from .parsers import assign_role_parser, create_role_parser, get_role_parser, patch_role_parser
 
 
 def role_required(required_role: str):
@@ -28,16 +28,10 @@ def role_required(required_role: str):
     return wrapper
 
 
-class TestOnlyAdmin(Resource):
-    @role_required("admin")
-    def get(self):
-        return jsonify(secret="super_secret")
-
-
 class UserRole(Resource):
     @role_required("admin")
     def post(self):
-        args = role_parser.parse_args()
+        args = create_role_parser.parse_args()
         try:
             user_datastore.create_role(**args)
             db.session.commit()
@@ -46,9 +40,35 @@ class UserRole(Resource):
 
         return HTTPStatus.CREATED
 
-    @jwt_required()
+
+    @role_required("admin")
     def get(self):
-        return jsonify(roles=[str(role.name) for role in current_user.roles])
+        args = get_role_parser.parse_args()
+        name = args.get('name')
+        if name:
+            role = Role.get_role_by_name(name)
+            return jsonify(name=role.name, description=role.description)
+        else:
+            return jsonify({role.name:role.description for role in Role.get_all()})
+
+    @role_required("admin")
+    def patch(self):
+        args = patch_role_parser.parse_args()
+        _id = args.get('id')
+        _name = args.get('name')
+        description = args.get('description')
+        if _id:
+            role = Role.get_role_by_id(_id)
+            role.name = _name
+            role.description = description
+            db.session.commit()
+            return make_response(jsonify({"message":"role updated"}), 200)
+
+        if _name:
+            role = Role.get_role_by_name(_name)
+            role.description = description
+            db.session.commit()
+            return make_response(jsonify({"message":"role updated"}), 200)
 
 
 class AssignRole(Resource):

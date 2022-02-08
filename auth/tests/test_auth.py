@@ -56,8 +56,7 @@ def test_create_admin_role(admin_header):
     endpoint = "/role"
     params = {"name": "admin", "description": "administrator"}
     r = requests.post(url + prefix + endpoint, params=params, headers=admin_header)
-    # assert r.status_code == 200
-    assert r.status_code == 400  # already exists
+    assert r.status_code in (200, 400) # 400 if already exists
 
 
 def test_asign_role(admin_header):
@@ -118,7 +117,32 @@ def test_asign_same_role_twice(admin_header):
     assert r2.status_code == 400
 
 
-def test_get_role(admin_header):
+def test_get_admin_role(admin_header):
+    endpoint = "/role"
+    r = requests.get(url + prefix + endpoint, params={'name': 'admin'}, headers=admin_header)
+    print(r.json())
+    assert r.status_code == 200
+
+def test_get_all_roles(admin_header):
     endpoint = "/role"
     r = requests.get(url + prefix + endpoint, headers=admin_header)
-    assert "admin" in r.json().get("roles")
+    print(r.json())
+    assert r.status_code == 200
+
+def test_change_role_description_by_name(admin_header):
+    endpoint = "/role"
+    params = {"name": "foo", "description": "Changed description"}
+    patch = requests.patch(url + prefix + endpoint, params=params, headers=admin_header)
+    r = requests.get(url+prefix+endpoint, headers=admin_header)
+    print(patch.json())
+    print(r.json())
+    assert r.json()['foo'] == params.get("description")
+
+def test_change_role_description_by_id(admin_header):
+    endpoint = "/role"
+    params = {"id": "9ee16219-488d-4237-857d-54a3be226702", "name": "foo", "description": "Changed description by id"}
+    patch = requests.patch(url + prefix + endpoint, params=params, headers=admin_header)
+    r = requests.get(url+prefix+endpoint, headers=admin_header)
+    print(patch.json())
+    print(r.json())
+    assert r.json()['foo'] == params.get("description")
