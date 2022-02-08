@@ -21,7 +21,7 @@ def role_required(required_role: str):
             if role in current_user.roles:
                 return fn(*args, **kwargs)
             else:
-                return jsonify(message="Admins only!"), 403
+                return abort(HTTPStatus.FORBIDDEN, message="Admins only!")
 
         return decorator
 
@@ -72,12 +72,12 @@ class AssignRole(Resource):
         login = args.get("login")
         user = User.get_user_by_login(login)
         if not user:
-            abort(HTTPStatus.NOT_FOUND, message="User not found")
+            return abort(HTTPStatus.NOT_FOUND, message="User not found")
         role = user_datastore.find_or_create_role(args.get("name"))
         if role.name not in user.roles:
             return abort(
                 HTTPStatus.BAD_REQUEST,
-                message=f"Role {role.name} is not assigned to user {user.name}",
+                message=f"Role {role.name} is not assigned to user {login}",
             )
         user_datastore.remove_role_from_user(user, role)
         db.session.commit()
