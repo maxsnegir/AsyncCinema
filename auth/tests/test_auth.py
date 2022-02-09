@@ -44,7 +44,7 @@ def me_endpoint(base_url):
 
 @pytest.fixture(scope="session")
 def role_endpoint():
-    resource = "/role"
+    resource = "/roles"
     role_id = "9ee16219-488d-4237-857d-54a3be226702"
     endpoint = f"{base_url}{resource}"
     if role_id:
@@ -89,7 +89,7 @@ def test_me(admin_header, me_endpoint):
 class TestRole:
     @pytest.fixture(scope="class")
     def endpoint_url(self):
-        return "http://81.163.25.103:5000/api/v1/role"
+        return "http://81.163.25.103:5000/api/v1/roles"
 
     @pytest.fixture(scope="class")
     def role_id(self):

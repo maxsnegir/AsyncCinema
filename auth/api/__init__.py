@@ -10,7 +10,7 @@ api_v1.add_resource(UserLogin, "/login")
 api_v1.add_resource(UserLogout, "/logout")
 api_v1.add_resource(RefreshToken, "/refresh")
 api_v1.add_resource(UserInfo, "/me")
-api_v1.add_resource(UserRole, "/role", "/role/<role_id>")
+api_v1.add_resource(UserRole, "/roles", "/roles/<role_id>")
 api_v1.add_resource(AssignRole, "/assign_role")
 
 
