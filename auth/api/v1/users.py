@@ -15,21 +15,19 @@ from .parsers import register_parser, login_parser
 
 
 class UserRegister(Resource):
-
     def post(self):
         args = register_parser.parse_args()
-        password = args.get('password')
+        password = args.get("password")
         args["password"] = generate_password_hash(password)
         try:
             user = user_datastore.create_user(**args)
             db.session.commit()
-            return make_response(jsonify(login=user.login)), HTTPStatus.CREATED
+            return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
         except IntegrityError:
             return abort(HTTPStatus.BAD_REQUEST, message="User already exists")
-          
+
 
 class UserLogin(Resource):
-
     def post(self):
         args = login_parser.parse_args()
         login = args.get("login")
@@ -40,11 +38,13 @@ class UserLogin(Resource):
 
         token_service = TokenService()
         access_token, refresh_token = token_service.get_jwt_tokens(str(user.id))
-        return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), HTTPStatus.OK)
+        return make_response(
+            jsonify(access_token=access_token, refresh_token=refresh_token),
+            HTTPStatus.OK,
+        )
 
 
 class UserLogout(Resource):
-
     @jwt_required()
     def post(self):
         jwt = get_jwt()
@@ -59,7 +59,6 @@ class UserLogout(Resource):
 
 
 class RefreshToken(Resource):
-
     @jwt_required(refresh=True)
     def post(self):
         jwt = get_jwt()
@@ -72,11 +71,13 @@ class RefreshToken(Resource):
 
         token_service.revoke_token(jti, identity)
         access_token, refresh_token = token_service.get_jwt_tokens(identity)
-        return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), HTTPStatus.OK)
+        return make_response(
+            jsonify(access_token=access_token, refresh_token=refresh_token),
+            HTTPStatus.OK,
+        )
 
 
 class UserInfo(Resource):
-
     @jwt_required()
     def get(self):
         return jsonify(
