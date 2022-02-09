@@ -10,3 +10,5 @@ flask_redis==0.4.0
 gevent==21.12.0
 typer==0.4.0
 Werkzeug==0.16.1
+email-validator==1.1.3
+python-dotenv==0.19.2

@@ -1,3 +1,5 @@
+from time import sleep
+
 from gevent import monkey
 
 monkey.patch_all()
@@ -6,7 +8,7 @@ import typer
 from werkzeug.security import generate_password_hash
 from gevent.pywsgi import WSGIServer
 from db import db
-from db.db_models import DefaultRoles
+from db.db_models import DefaultRoles, Role
 from db.datastore import user_datastore
 from sqlalchemy.exc import IntegrityError
 from main import app
@@ -32,8 +34,18 @@ def create_superuser(
 
 
 @typer_manager.command()
+def create_base_roles():
+    for role in Role.Meta.BASE_ROLES:
+        user_datastore.find_or_create_role(role)
+        sleep(0.1)
+        typer.echo(f'Role {role} created')
+
+    db.session.commit()
+
+
+@typer_manager.command()
 def runserver():
-    http_server = WSGIServer(('', 5001), app)
+    http_server = WSGIServer(('', 5000), app)
     http_server.serve_forever()
 
 

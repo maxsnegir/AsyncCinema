@@ -1,7 +1,7 @@
 from flask import Flask
 
+from db import init_db
 from api import init_api
-from db import init_db, db
 from db.redis import init_redis
 from db.datastore import init_datastore
 from jwt_manager import init_jwt
@@ -19,7 +19,6 @@ init_api(app)
 init_jwt(app)
 
 app.app_context().push()
-db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)

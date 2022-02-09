@@ -20,5 +20,18 @@ services:
     ports:
       - "6379:6379"
 
+
+  auth_service:
+    build: .
+    image: auth_service_image
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - '8001:5000'
+
 volumes:
   postgres_data:

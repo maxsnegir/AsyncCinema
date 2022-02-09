@@ -1,8 +1,35 @@
-Для создания пользователя с ролью "admin" предусмотрена комманда:
+# AuthService
 
-flask cmd createsuperuser [OPTIONS]
+### Описание
+Сервис для авторизации пользователей в онлайн кинотеатре
 
-Options:
-  --email TEXT     User email
-  --login TEXT
-  --password TEXT
+### Технологии
+
+- Python 3.8
+- Flask
+- Postgres 12
+- Docker
+- Redis
+
+## Запуск проекта
+
+_Все команды должны выполняться в главной директории проекта._
+
+1. Создайте файл **.env** с переменными окружения для работы проекта (пример в файле **.env.template**):
+
+2. Убедитесь, что у вас
+   установлен и запущен [Docker](https://www.docker.com/products/docker-desktop)
+3. Запустите проект командой:
+
+```bash
+docker-compose up --build 
+```
+
+4. Создание супер пользователя
+```
+docker exec -it auth_auth_service_1 python commands.py create-superuser <login> <email address> <password>
+```
+
+
+### Запуск тестов
+in progress..

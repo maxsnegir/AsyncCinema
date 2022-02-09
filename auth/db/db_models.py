@@ -40,7 +40,7 @@ class User(TimeStampModel, db.Model, UserMixin):
     )
     login = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
     active = db.Column(db.Boolean())
     roles = db.relationship(
         "Role", secondary=user_roles, backref=db.backref("users", lazy="dynamic")
