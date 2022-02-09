@@ -16,10 +16,9 @@ from email_validator import validate_email, EmailNotValidError
 
 
 class UserRegister(Resource):
-
     def post(self):
         args = register_parser.parse_args()
-        password = args.get('password')
+        password = args.get("password")
         args["password"] = generate_password_hash(password)
         email = args["email"]
         try:
@@ -36,8 +35,8 @@ class UserRegister(Resource):
 
         return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
 
-class UserLogin(Resource):
 
+class UserLogin(Resource):
     def post(self):
         args = login_parser.parse_args()
         login = args.get("login")
@@ -52,7 +51,6 @@ class UserLogin(Resource):
 
 
 class UserLogout(Resource):
-
     @jwt_required()
     def post(self):
         jwt = get_jwt()
@@ -63,7 +61,6 @@ class UserLogout(Resource):
 
 
 class RefreshToken(Resource):
-
     @jwt_required(refresh=True)
     def post(self):
         jwt = get_jwt()
@@ -79,7 +76,6 @@ class RefreshToken(Resource):
 
 
 class UserInfo(Resource):
-
     @jwt_required()
     def get(self):
         return jsonify(
