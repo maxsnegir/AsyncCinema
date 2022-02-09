@@ -1,11 +1,16 @@
 import uuid
 
-from flask_login import UserMixin
+from flask_security import UserMixin, RoleMixin
 from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.security import check_password_hash
-from flask_security import RoleMixin
 
 from db import db
+
+
+class DefaultRoles:
+    ADMIN = 'admin'
+    SUPER_USER = 'super user'
+    USER = 'user'
 
 
 class TimeStampModel:
@@ -52,6 +57,10 @@ class User(TimeStampModel, db.Model, UserMixin):
         user = User.query.filter_by(login=login).one_or_none()
         return user
 
+    @property
+    def is_admin(self):
+        return self.has_role(DefaultRoles.ADMIN) or self.has_role(DefaultRoles.SUPER_USER)
+
 
 class Role(db.Model, RoleMixin, TimeStampModel):
     __tablename__ = "roles"
@@ -66,18 +75,15 @@ class Role(db.Model, RoleMixin, TimeStampModel):
     name = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String, nullable=True)
 
+    class Meta:
+        BASE_ROLES = (
+            DefaultRoles.ADMIN,
+            DefaultRoles.SUPER_USER,
+            DefaultRoles.USER
+        )
+
     def __repr__(self):
         return f"<Role {self.name}>"
-
-    @staticmethod
-    def get_role_by_id(role_id: UUID):
-        role = Role.query.filter_by(id=role_id).one_or_none()
-        return role
-
-    @staticmethod
-    def get_role_by_name(name: str):
-        role = Role.query.filter_by(name=name).one_or_none()
-        return role
 
     @staticmethod
     def get_all_roles():

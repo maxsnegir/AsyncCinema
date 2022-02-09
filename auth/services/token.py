@@ -2,19 +2,21 @@ from uuid import uuid4
 
 from flask_jwt_extended import create_access_token, create_refresh_token
 
+from db.db_models import User
 from storage import token_storage
 
 
 class TokenService:
 
-    def __init__(self):
+    def __init__(self, user: User):
         self.storage = token_storage
+        self.user = user
 
-    @staticmethod
-    def get_jwt_tokens(user_id):
-        identity = str(user_id)
+    def get_jwt_tokens(self):
+        identity = str(self.user.id)
         refresh_token_jti = str(uuid4())
-        access_token = create_access_token(identity=identity)
+        access_token = create_access_token(identity=identity,
+                                           additional_claims={'is_admin': self.user.is_admin})
         refresh_token = create_refresh_token(identity=identity, additional_claims={"jti": refresh_token_jti})
         token_storage.set_refresh_token(identity, refresh_token_jti)
         return access_token, refresh_token

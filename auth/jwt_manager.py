@@ -3,9 +3,11 @@ from datetime import timedelta
 from flask import Flask
 from flask_jwt_extended import JWTManager
 
+from api import api
 from db.db_models import User
 
 jwt_manager = JWTManager()
+jwt_manager._set_error_handler_callbacks(api)
 
 
 @jwt_manager.user_lookup_loader
