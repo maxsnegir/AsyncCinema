@@ -48,13 +48,11 @@ class UserLogin(Resource):
         # Добавляем информацию об авторизации
         user_agent = request.headers.get('User-Agent')
         user_ip = request.remote_addr
-        user_geo = DbIpCity.get(user_ip, api_key='free').city
 
         user_info = UserAuthorizations(id=uuid.uuid4(),
                                        user_id=user.id,
                                        user_agent=user_agent,
                                        user_ip=user_ip,
-                                       user_geo=user_geo
                                        )
 
         db.session.add(user_info)

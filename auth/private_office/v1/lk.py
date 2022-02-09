@@ -13,24 +13,9 @@ from sqlalchemy import select, update
 from db.datastore import user_datastore
 from db.db_models import User, UserAuthorizations
 from services.token import TokenService
-from . import register_parser, login_parser, change_login_parser, change_password_parser
+from . import login_parser, change_login_parser, change_password_parser, auth_history_parser
 
 from ip2geotools.databases.noncommercial import DbIpCity
-
-
-class LKUserRegister(Resource):
-
-    def post(self):
-        args = register_parser.parse_args()
-        password = args.get('password')
-        args["password"] = generate_password_hash(password)
-        try:
-            user = user_datastore.create_user(**args)
-            db.session.commit()
-        except IntegrityError:
-            abort(HTTPStatus.BAD_REQUEST, message="User already exists")
-
-        return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
 
 
 class LKUserLogin(Resource):
@@ -64,55 +49,32 @@ class LKUserLogin(Resource):
         return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), HTTPStatus.OK)
 
 
-class LKUserLogout(Resource):
-
-    @jwt_required()
-    def post(self):
-        jwt = get_jwt()
-        jti = jwt["jti"]
-        identity = jwt["sub"]
-        token_service = TokenService()
-
-        if not token_service.validate_access_token(identity):
-            abort(HTTPStatus.UNAUTHORIZED, message="You are not login")
-        token_service.revoke_token(jti, identity)
-        return make_response(jsonify(msg="Access token revoked"), HTTPStatus.OK)
-
-
-class LKRefreshToken(Resource):
-
-    @jwt_required(refresh=True)
-    def post(self):
-        jwt = get_jwt()
-        jti = jwt["jti"]
-        identity = jwt["sub"]
-
-        token_service = TokenService()
-        if not token_service.validate_refresh_token(identity, jti):
-            abort(HTTPStatus.BAD_REQUEST, message="Wrong refresh token")
-
-        token_service.revoke_token(jti, identity)
-        access_token, refresh_token = token_service.get_jwt_tokens(identity)
-        return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), HTTPStatus.OK)
-
-
 class LKUserAuths(Resource):
     number_authentications = 5
 
     @jwt_required()
     def get(self):
-        info_of_auth = select([UserAuthorizations])\
-            .where(UserAuthorizations.user_id == current_user.id)
+        args = auth_history_parser.parse_args()
+        current_page = args.get('page', 1)
+        current_page = int(current_page) if isinstance(current_page, str) else current_page
 
-        engine = db.engine.engine
+        info_auth = UserAuthorizations.query \
+            .filter_by(user_id=current_user.id)\
+            .order_by(UserAuthorizations.updated_at.desc())\
+            .paginate(current_page, self.number_authentications)\
+            .items
 
-        connection = engine.connect()
-        result = connection.execute(info_of_auth)
+        auths_items = []
+        for item in info_auth:
+            auths_items.append(
+                {
+                    'user-ip': item.user_ip,
+                    'user-agent': item.user_agent,
+                    'date-of-last-visit': str(item.updated_at)
+                }
+            )
 
-        raws = result.fetchmany(self.number_authentications)
-        auths = {str(raw[0]): {'user-agent': raw[4], 'ip': raw[5], 'city': raw[6]} for raw in raws[::-1]}
-        print(auths)
-        return auths
+        return jsonify(auths_items)
 
 
 class LKChangeLogin(Resource):
@@ -150,13 +112,3 @@ class LKChangePassword(Resource):
             connection.execute(query)
             return jsonify(status='You are changes password!')
         return jsonify(status=f'Bad password!')
-
-
-class LKUserInfo(Resource):
-    @jwt_required()
-    def get(self):
-        return jsonify(
-            id=current_user.id,
-            password=current_user.password,  # Для примера
-            login=current_user.login,
-        )

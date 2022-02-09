@@ -14,3 +14,6 @@ change_login_parser.add_argument('new_login', type=str, required=True, help='New
 
 change_password_parser = reqparse.RequestParser()
 change_password_parser.add_argument('new_password', type=str, required=True, help='New password is required')
+
+auth_history_parser = reqparse.RequestParser()
+auth_history_parser.add_argument('page', type=str, required=True, help='Page is required')
