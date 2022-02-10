@@ -1,5 +1,6 @@
 import uuid
 
+from flask import Request
 from flask_security import UserMixin, RoleMixin
 from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.security import check_password_hash
@@ -89,3 +90,24 @@ class Role(db.Model, RoleMixin, TimeStampModel):
     def get_all_roles():
         roles = Role.query.all()
         return roles
+
+
+class AuthHistory(TimeStampModel, db.Model):
+    __tablename__ = "auth_history"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False, )
+    user_id = db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id"))
+    date = db.Column(db.DateTime, server_default=db.func.now())
+    user_agent = db.Column(db.Text, nullable=False)
+    user_ip = db.Column(db.String)
+
+    @staticmethod
+    def create_history_record(user: User, request: Request):
+        user_agent = request.user_agent.string
+        ip_address = request.remote_addr
+
+        history_record = AuthHistory(user_id=user.id,
+                                     user_agent=user_agent,
+                                     user_ip=ip_address)
+        db.session.add(history_record)
+        db.session.commit()
