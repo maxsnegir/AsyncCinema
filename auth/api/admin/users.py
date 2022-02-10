@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from email_validator import validate_email, EmailNotValidError
-from flask import make_response, jsonify
+from flask import make_response, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt, current_user
 from flask_restplus import Resource, abort
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash
 from api.admin import admin_namespace as namespace
 from db import db
 from db.datastore import user_datastore
-from db.db_models import User, DefaultRoles
+from db.db_models import User, DefaultRoles, AuthHistory
 from services.token import TokenService
 from .parsers import register_parser, login_parser, change_password_parser
 
@@ -51,6 +51,7 @@ class Login(Resource):
         if not user or not user.check_password(password):
             abort(HTTPStatus.UNAUTHORIZED, message="Wrong login or password")
 
+        AuthHistory.create_history_record(user, request)
         token_service = TokenService(user)
         access_token, refresh_token = token_service.get_jwt_tokens()
         return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), HTTPStatus.OK)
