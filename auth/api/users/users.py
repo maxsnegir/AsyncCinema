@@ -8,28 +8,15 @@ from sqlalchemy.exc import IntegrityError
 
 from api.users import user_namespace as namespace
 from api.users.parsers import change_user_data_parser
-from db import db
+from db import db_session
 from db.db_models import AuthHistory
 from .parsers import auth_history_parser
 
 
 @namespace.route('/me')
 class UserInfo(Resource):
+    method_decorators = [jwt_required(), ]
 
-    @jwt_required()
-    def get(self):
-        return jsonify(
-            id=current_user.id,
-            login=current_user.login,
-            email=current_user.email,
-            roles=[role.name for role in current_user.roles]
-        )
-
-
-@namespace.route('/me/change')
-class UserDataChange(Resource):
-
-    @jwt_required()
     def post(self):
         args = change_user_data_parser.parse_args()
         login = args["login"]
@@ -38,22 +25,30 @@ class UserDataChange(Resource):
         if not login and not email:
             abort(HTTPStatus.BAD_REQUEST, message='Enter login or email to change')
 
-        if login:
-            current_user.login = login
-        if email:
-            try:
-                validate_email(email)
-            except EmailNotValidError as e:
-                abort(HTTPStatus.BAD_REQUEST, message=str(e))
-            current_user.email = email
-
         try:
-            db.session.commit()
+            with db_session():
+                if login:
+                    current_user.login = login
+                if email:
+                    try:
+                        validate_email(email)
+                    except EmailNotValidError as e:
+                        abort(HTTPStatus.BAD_REQUEST, message=str(e))
+                    current_user.email = email
+
         except IntegrityError:
             abort(HTTPStatus.BAD_REQUEST, message='Login or email already exists')
 
         return make_response(jsonify(id=current_user.id, login=current_user.login, email=current_user.email,
                                      roles=[role.name for role in current_user.roles]), HTTPStatus.OK)
+
+    def get(self):
+        return jsonify(
+            id=current_user.id,
+            login=current_user.login,
+            email=current_user.email,
+            roles=[role.name for role in current_user.roles]
+        )
 
 
 @namespace.route("/me/auth-history")

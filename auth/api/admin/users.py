@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
 from api.admin import admin_namespace as namespace
-from db import db
+from db import db, db_session
 from db.datastore import user_datastore
 from db.db_models import User, DefaultRoles, AuthHistory
 from services.token import TokenService
@@ -30,10 +30,9 @@ class Register(Resource):
             abort(HTTPStatus.BAD_REQUEST, message=str(e))
 
         try:
-            user = user_datastore.create_user(**args)
-            db.session.commit()
-            user_datastore.add_role_to_user(user, DefaultRoles.USER)
-            db.session.commit()
+            with db_session():
+                user = user_datastore.create_user(**args)
+                user_datastore.add_role_to_user(user, DefaultRoles.USER)
         except IntegrityError:
             abort(HTTPStatus.BAD_REQUEST, message="User with current login or email already exists")
 
@@ -64,7 +63,7 @@ class Logout(Resource):
     def post(self):
         jwt = get_jwt()
         TokenService.revoke_token(jwt)
-        return make_response(jsonify(msg="Access token revoked"), HTTPStatus.OK)
+        return make_response(jsonify(message="Access token revoked"), HTTPStatus.OK)
 
 
 @namespace.route('/refresh')

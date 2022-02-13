@@ -16,21 +16,20 @@ from main import app
 typer_manager = typer.Typer()
 
 
-@typer_manager.command()
-def create_superuser(
-        login: str,
-        email: str,
-        password: str) -> None:
-    password_hash = generate_password_hash(password)
-    args = {'login': login, 'email': email, 'password': password_hash}
+def create_user(login: str, email: str, password: str, role: str):
     try:
-        user = user_datastore.create_user(**args)
-        admin_role = user_datastore.find_or_create_role(DefaultRoles.SUPER_USER)
+        user = user_datastore.create_user(login=login, email=email, password=generate_password_hash(password))
+        admin_role = user_datastore.find_or_create_role(role)
         user_datastore.add_role_to_user(user, admin_role)
         db.session.commit()
         typer.echo(f'superuser created: {login}')
     except IntegrityError:
         typer.echo(f'Login or email already exists')
+
+
+@typer_manager.command()
+def create_superuser(login: str, email: str, password: str) -> None:
+    create_superuser(login, email, password, DefaultRoles.SUPER_USER)
 
 
 @typer_manager.command()

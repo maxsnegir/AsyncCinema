@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from api.admin import admin_namespace as namespace
 from api.permissions import admin_permission
-from db import db
+from db import db, db_session
 from db.datastore import user_datastore
 from db.db_models import Role, User
 from .parsers import role_parser, change_role_parser
@@ -22,8 +22,8 @@ class RolesView(Resource):
 
         args = role_parser.parse_args()
         try:
-            role = user_datastore.create_role(**args)
-            db.session.commit()
+            with db_session():
+                role = user_datastore.create_role(**args)
         except IntegrityError:
             abort(HTTPStatus.BAD_REQUEST, message="Role already exists")
         return make_response(jsonify(id=role.id, name=role.name, description=role.description), HTTPStatus.CREATED)
@@ -49,15 +49,14 @@ class RoleView(Resource):
         if not name and not description:
             abort(HTTPStatus.BAD_REQUEST, message="Enter name or description to change")
 
-        if name:
-            if role.name in Role.Meta.BASE_ROLES:
-                abort(HTTPStatus.BAD_REQUEST, message="You cant change base role names")
-            role.name = name
-        if description:
-            role.description = description
-
         try:
-            db.session.commit()
+            with db_session():
+                if name:
+                    if role.name in Role.Meta.BASE_ROLES:
+                        abort(HTTPStatus.BAD_REQUEST, message="You cant change base role names")
+                    role.name = name
+                if description:
+                    role.description = description
         except IntegrityError:
             abort(HTTPStatus.BAD_REQUEST, message=f"Role with name {name} already exists")
 

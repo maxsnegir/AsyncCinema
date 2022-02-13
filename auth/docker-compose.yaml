@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   postgres:
@@ -8,8 +8,6 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5439:5432"
 
   redis:
     image: redis
@@ -17,12 +15,11 @@ services:
       - redis-server
     env_file:
       - .env
-    ports:
-      - "6379:6379"
-
 
   auth_service:
-    build: .
+    build:
+      context: .
+      target: prod
     image: auth_service_image
     restart: always
     env_file:

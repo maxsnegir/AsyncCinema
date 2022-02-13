@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -14,3 +16,13 @@ def init_db(app: Flask):
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+
+@contextmanager
+def db_session():
+    try:
+        yield db.session
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        raise ex

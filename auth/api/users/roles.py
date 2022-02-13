@@ -2,8 +2,8 @@ from flask import jsonify
 from flask_jwt_extended import jwt_required
 from flask_restplus import Resource
 
-from api.permissions import admin_permission
 from api.admin import admin_namespace as namespaces
+from api.permissions import admin_permission
 from db.db_models import User, Role
 
 
