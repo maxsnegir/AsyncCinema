@@ -32,4 +32,6 @@ docker exec -it auth_auth_service_1 python commands.py create-superuser <login> 
 
 
 ### Запуск тестов
+```
 docker-compose -f docker-compose.test.yaml up --build tests
+```
