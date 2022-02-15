@@ -34,5 +34,5 @@ docker exec -it auth python commands.py create-superuser <login> <email address>
 1. Перейдите в директорию auth
 2. Выполните команду:
 ```
-docker-compose -f docker-compose.test.yaml up --build tests
+docker-compose -f docker-compose.test.yaml up --build
 ```
