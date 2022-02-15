@@ -4,7 +4,7 @@ from db.db_models import User
 
 
 def test_login_is_ok(client, default_user, default_login, default_password):
-    response = client.post(path="/admin/login",
+    response = client.post(path="auth/admin/login",
                            data={
                                "login": default_login,
                                "password": default_password,
@@ -15,7 +15,7 @@ def test_login_is_ok(client, default_user, default_login, default_password):
 
 
 def test_login_is_wrong(client):
-    response = client.post(path="/admin/login",
+    response = client.post(path="/auth/admin/login",
                            data={
                                "login": "wrong_login",
                                "password": "wrong_password",
@@ -28,7 +28,7 @@ def test_register_is_ok(client):
     password = "password"
     email = "user@gmail.com"
 
-    response = client.post(path="/admin/register",
+    response = client.post(path="/auth/admin/register",
                            data={
                                "login": login,
                                "password": password,
@@ -41,7 +41,7 @@ def test_register_is_ok(client):
 
 
 def test_register_with_existing_login(client, default_login):
-    response = client.post(path="/admin/register",
+    response = client.post(path="/auth/admin/register",
                            data={
                                "login": default_login,
                                "password": "password",
@@ -53,7 +53,7 @@ def test_register_with_existing_login(client, default_login):
 
 
 def test_register_with_existing_email(client, default_email):
-    response = client.post(path="/admin/register",
+    response = client.post(path="/auth/admin/register",
                            data={
                                "login": "new_user_login",
                                "password": "password",
@@ -64,21 +64,21 @@ def test_register_with_existing_email(client, default_email):
 
 
 def test_logout_ok(client, access_token_for_default_user):
-    response = client.post(path="/admin/logout",
+    response = client.post(path="/auth/admin/logout",
                            headers=access_token_for_default_user)
     assert response.status_code == HTTPStatus.OK
     assert response.json.get('message') == 'Access token revoked'
 
 
 def test_logout_with_refresh_token(client, refresh_token_for_default_user):
-    response = client.post(path="/admin/logout",
+    response = client.post(path="/auth/admin/logout",
                            headers=refresh_token_for_default_user)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json.get('msg') == 'Only non-refresh tokens are allowed'
 
 
 def test_refresh_is_ok(client, refresh_token_for_default_user):
-    response = client.post(path="/admin/refresh",
+    response = client.post(path="/auth/admin/refresh",
                            headers=refresh_token_for_default_user)
 
     assert response.status_code == HTTPStatus.OK
@@ -86,23 +86,23 @@ def test_refresh_is_ok(client, refresh_token_for_default_user):
 
 
 def test_refresh_with_revoked_token(client, refresh_token_for_default_user):
-    response = client.post(path="/admin/refresh",
+    response = client.post(path="/auth/admin/refresh",
                            headers=refresh_token_for_default_user)
 
     assert response.status_code == HTTPStatus.OK
-    response_new = client.post(path="/admin/refresh",
+    response_new = client.post(path="/auth/admin/refresh",
                                headers=refresh_token_for_default_user)
     assert response_new.status_code == HTTPStatus.BAD_REQUEST
     assert response_new.json.get("message") == "Wrong refresh token"
 
 
 def test_refresh_with_new_token(client, refresh_token_for_default_user):
-    response = client.post(path="/admin/refresh",
+    response = client.post(path="/auth/admin/refresh",
                            headers=refresh_token_for_default_user)
 
     assert response.status_code == HTTPStatus.OK
     token = response.json.get("refresh_token")
-    response_new = client.post(path="/admin/refresh",
+    response_new = client.post(path="/auth/admin/refresh",
                                headers={"Authorization": f"Bearer {token}"})
     assert response_new.status_code == HTTPStatus.OK
     assert response_new.json.get("access_token") and response_new.json.get("refresh_token")
@@ -110,7 +110,7 @@ def test_refresh_with_new_token(client, refresh_token_for_default_user):
 
 def test_password_change_is_ok(client, access_token_for_default_user, default_password, default_user):
     new_password = "new_password"
-    response = client.post("admin/password-change",
+    response = client.post(path="/auth/admin/password-change",
                            headers=access_token_for_default_user,
                            data={
                                "current_password": default_password,

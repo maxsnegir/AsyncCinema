@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   postgres:
@@ -10,6 +10,14 @@ services:
       - postgres_data:/var/lib/postgresql/data/
       - ./etl/sqlite_to_postgres/psql_schema.sql:/docker-entrypoint-initdb.d/psql_schema.sql
 
+  auth_db:
+    image: postgres:12.4
+    restart: always
+    env_file:
+      - ./auth/.env
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data/
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
     environment:
@@ -20,12 +28,19 @@ services:
     env_file:
       - .env
 
-  redis:
+  redis_api:
     image: redis
     command:
       - redis-server
     env_file:
       - .env
+
+  redis_auth:
+    image: redis
+    command:
+      - redis-server
+    env_file:
+      - ./auth/.env
 
   etl:
     build: ./etl
@@ -37,21 +52,46 @@ services:
     volumes:
       - etl_data:/etl
 
+  auth_service:
+    container_name: auth
+    build:
+      context: ./auth/.
+      target: prod
+    image: auth_service_image
+    restart: always
+    env_file:
+      - ./auth/.env
+    depends_on:
+      - redis_auth
+      - auth_db
+
   backend_api:
+    container_name: backend_api
     build: src/
     image: backend_api_image
     restart: always
     env_file:
       - .env
     depends_on:
-      - redis
+      - redis_api
       - elasticsearch
-    ports:
-      - '8000:8000'
     volumes:
       - ./src/:/api/
+
+  nginx:
+    image: nginx:1.19.2
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf:/etc/nginx/conf.d:ro
+    depends_on:
+      - auth_service
+      - backend_api
+    ports:
+      - "80:80"
+    restart: always
 
 volumes:
   es_data:
   postgres_data:
+  auth_db_data:
   etl_data:

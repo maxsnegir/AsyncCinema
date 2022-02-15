@@ -29,7 +29,7 @@ def create_user(login: str, email: str, password: str, role: str):
 
 @typer_manager.command()
 def create_superuser(login: str, email: str, password: str) -> None:
-    create_superuser(login, email, password, DefaultRoles.SUPER_USER)
+    create_user(login, email, password, DefaultRoles.SUPER_USER)
 
 
 @typer_manager.command()

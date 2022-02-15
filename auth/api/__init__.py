@@ -6,7 +6,8 @@ from api.users import user_namespace
 
 api = Api(
     title="Auth API",
-    version="1.0"
+    version="1.0",
+    prefix='/auth/'
 )
 
 api.add_namespace(admin_namespace)

@@ -27,7 +27,7 @@ docker-compose up --build
 
 4. Создание супер пользователя
 ```
-docker exec -it auth_auth_service_1 python commands.py create-superuser <login> <email address> <password>
+docker exec -it auth python commands.py create-superuser <login> <email address> <password>
 ```
 
 
