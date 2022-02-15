@@ -18,6 +18,7 @@ from .parsers import register_parser, login_parser, change_password_parser
 @namespace.route('/register')
 class Register(Resource):
 
+    @namespace.expect(register_parser)
     def post(self):
         args = register_parser.parse_args()
         password = args.get("password")
@@ -36,12 +37,13 @@ class Register(Resource):
         except IntegrityError:
             abort(HTTPStatus.BAD_REQUEST, message="User with current login or email already exists")
 
-        return make_response(jsonify(login=user.login), HTTPStatus.CREATED)
+        return make_response(jsonify(login=user.login, email=user.email), HTTPStatus.CREATED)
 
 
 @namespace.route('/login')
 class Login(Resource):
 
+    @namespace.expect(login_parser)
     def post(self):
         args = login_parser.parse_args()
         login = args.get("login")
@@ -84,8 +86,9 @@ class RefreshToken(Resource):
 @namespace.route('/password-change')
 class UserChangePassword(Resource):
     """Смена пароля пользователя"""
+    method_decorators = [jwt_required(), ]
 
-    @jwt_required()
+    @namespace.expect(change_password_parser)
     def post(self):
 
         args = change_password_parser.parse_args()

@@ -6,8 +6,8 @@ from flask_jwt_extended import jwt_required, current_user
 from flask_restplus import Resource, abort
 from sqlalchemy.exc import IntegrityError
 
-from api.users import user_namespace as namespace
-from api.users.parsers import change_user_data_parser
+from api.v1 import user_namespace as namespace
+from api.v1.parsers import change_user_data_parser
 from db import db_session
 from db.db_models import AuthHistory
 from .parsers import auth_history_parser
@@ -17,6 +17,7 @@ from .parsers import auth_history_parser
 class UserInfo(Resource):
     method_decorators = [jwt_required(), ]
 
+    @namespace.expect(change_user_data_parser)
     def post(self):
         args = change_user_data_parser.parse_args()
         login = args["login"]
@@ -55,6 +56,7 @@ class UserInfo(Resource):
 class UserAuthHistory(Resource):
     method_decorators = [jwt_required()]
 
+    @namespace.expect(auth_history_parser)
     def get(self):
         args = auth_history_parser.parse_args()
         auth_history = AuthHistory.query.filter_by(user_id=current_user.id). \

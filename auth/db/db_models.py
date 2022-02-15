@@ -24,13 +24,13 @@ class TimeStampModel:
 user_roles = db.Table(
     "user_roles",
     db.metadata,
-    db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id")),
+    db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("v1.id")),
     db.Column("role_id", UUID(as_uuid=True), db.ForeignKey("roles.id")),
 )
 
 
 class User(TimeStampModel, db.Model, UserMixin):
-    __tablename__ = "users"
+    __tablename__ = "v1"
 
     id = db.Column(
         UUID(as_uuid=True),
@@ -44,7 +44,7 @@ class User(TimeStampModel, db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     active = db.Column(db.Boolean())
     roles = db.relationship(
-        "Role", secondary=user_roles, backref=db.backref("users", lazy="dynamic")
+        "Role", secondary=user_roles, backref=db.backref("v1", lazy="dynamic")
     )
 
     def __repr__(self):
@@ -96,7 +96,7 @@ class AuthHistory(TimeStampModel, db.Model):
     __tablename__ = "auth_history"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False, )
-    user_id = db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id"))
+    user_id = db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("v1.id"))
     date = db.Column(db.DateTime, server_default=db.func.now())
     user_agent = db.Column(db.Text, nullable=False)
     user_ip = db.Column(db.String)
