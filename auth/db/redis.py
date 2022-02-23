@@ -3,7 +3,7 @@ from flask_redis import FlaskRedis
 
 from settings import RedisSettings
 
-redis = FlaskRedis()
+redis = FlaskRedis(strict=True)
 
 
 def init_redis(app: Flask) -> None:

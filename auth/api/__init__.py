@@ -7,7 +7,6 @@ from api.v1 import user_namespace
 api = Api(
     title="Auth API",
     version="1.0",
-    prefix='/auth',
     doc="/auth/doc"
 )
 

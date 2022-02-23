@@ -10,14 +10,6 @@ services:
       - postgres_data:/var/lib/postgresql/data/
       - ./etl/sqlite_to_postgres/psql_schema.sql:/docker-entrypoint-initdb.d/psql_schema.sql
 
-  auth_db:
-    image: postgres:12.4
-    restart: always
-    env_file:
-      - ./auth/.env
-    volumes:
-      - auth_db_data:/var/lib/postgresql/data/
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
     environment:
@@ -35,13 +27,6 @@ services:
     env_file:
       - .env
 
-  redis_auth:
-    image: redis
-    command:
-      - redis-server
-    env_file:
-      - ./auth/.env
-
   etl:
     build: ./etl
     env_file:
@@ -51,19 +36,6 @@ services:
       - elasticsearch
     volumes:
       - etl_data:/etl
-
-  auth_service:
-    container_name: auth
-    build:
-      context: ./auth/.
-      target: prod
-    image: auth_service_image
-    restart: always
-    env_file:
-      - ./auth/.env
-    depends_on:
-      - redis_auth
-      - auth_db
 
   backend_api:
     container_name: backend_api
@@ -87,11 +59,58 @@ services:
       - auth_service
       - backend_api
     ports:
-      - "80:80"
+      - "81:8082" #  fast_api
+      - "82:8083" #  auth-flask
     restart: always
+
+
+  auth_service:
+    container_name: auth
+    build:
+      context: ./auth/.
+      target: prod
+    image: auth_service_image
+    restart: always
+    env_file:
+      - ./auth/.env
+    depends_on:
+      - redis_auth
+      - auth_db
+
+  auth_db:
+    image: postgres:12.4
+    restart: always
+    env_file:
+      - ./auth/.env
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data/
+    ports:
+      - "5439:5432"
+
+  redis_auth:
+    image: redis
+    command:
+      - redis-server
+    env_file:
+      - ./auth/.env
+    ports:
+      - "6379:6379"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+      - "5775:5775/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "14268:14268"
+      - "9411:9411"
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
 
 volumes:
   es_data:
   postgres_data:
-  auth_db_data:
   etl_data:
+  auth_db_data:

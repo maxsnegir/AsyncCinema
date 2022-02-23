@@ -20,7 +20,9 @@ services:
       - .env
     environment:
       - DB_HOST=postgres_test
+      - DB_PORT=5432
       - REDIS_HOST=redis_test
+      - RPS_COUNT=1000
     depends_on:
       - postgres_test
       - redis_test

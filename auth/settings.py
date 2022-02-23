@@ -62,3 +62,23 @@ class JWTSettings(BaseSettings):
         case_sentive = False
         env_file = '.env'
         env_file_encoding = 'utf-8'
+
+
+class OAuthSettings(BaseSettings):
+    YANDEX_CLIENT_ID = Field("1234", env="YANDEX_CLIENT_ID")
+    YANDEX_CLIENT_SECRET = Field("1234", env="YANDEX_CLIENT_SECRET")
+    YANDEX_ACCESS_TOKEN_URL = "https://oauth.yandex.ru/token"
+    YANDEX_USERINFO_ENDPOINT = "https://login.yandex.ru/info"
+    YANDEX_AUTHORIZE_URL = "https://oauth.yandex.ru/authorize"
+
+    MAIL_CLIENT_ID = Field("1234", env="MAIL_CLIENT_ID")
+    MAIL_CLIENT_SECRET = Field("1234", env="MAIL_CLIENT_SECRET")
+    MAIL_ACCESS_TOKEN_URL = "https://oauth.mail.ru/token"
+    MAIL_USERINFO_ENDPOINT = "https://oauth.mail.ru/userinfo"
+    MAIL_AUTHORIZE_URL = "https://oauth.mail.ru/login"
+
+    class Config:
+        env_prefix = ""
+        case_sentive = False
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
