@@ -9,6 +9,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
       - ./etl/sqlite_to_postgres/psql_schema.sql:/docker-entrypoint-initdb.d/psql_schema.sql
+    ports:
+      - "5433:5432"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
@@ -19,6 +21,8 @@ services:
       - es_data:/usr/share/elasticsearch/data
     env_file:
       - .env
+    ports:
+      - "9200:9200"
 
   redis_api:
     image: redis
@@ -26,6 +30,8 @@ services:
       - redis-server
     env_file:
       - .env
+    ports:
+      - "6380:6379"
 
   etl:
     build: ./etl
@@ -76,6 +82,8 @@ services:
     depends_on:
       - redis_auth
       - auth_db
+    ports:
+      - "5001:5000"
 
   auth_db:
     image: postgres:12.4

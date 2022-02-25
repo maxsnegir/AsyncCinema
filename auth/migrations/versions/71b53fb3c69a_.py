@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 7e75c6fdaa67
+Revision ID: 71b53fb3c69a
 Revises: 
-Create Date: 2022-02-23 19:22:13.308452
+Create Date: 2022-02-25 23:53:06.913781
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '7e75c6fdaa67'
+revision = '71b53fb3c69a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -49,9 +49,7 @@ def upgrade():
     sa.Column('user_ip', sa.String(), nullable=True),
     sa.Column('user_device_type', sa.Text(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id', 'user_device_type'),
-    sa.UniqueConstraint('id', 'user_device_type'),
-    postgresql_partition_by='LIST (user_device_type)'
+    sa.PrimaryKeyConstraint('id', 'user_device_type')
     )
     op.create_table('social_account',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),

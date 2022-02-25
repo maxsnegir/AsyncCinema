@@ -1,13 +1,14 @@
 from http import HTTPStatus
 from typing import List
 
-from fastapi import APIRouter, Depends, Query, HTTPException, Response
+from fastapi import APIRouter, Depends, Query, HTTPException, Response, Request
 
 from helpers.constants import ErrorMsg
 from models.film import FilmShort
 from models.person import Person
 from services.film import get_film_service, FilmService
 from services.person import PersonService, get_person_service
+from helpers.auth import role_permission
 
 router = APIRouter()
 
@@ -22,7 +23,8 @@ async def person_search(query: str = Query('', description='Поисковый �
 
 
 @router.get('/{person_id}', response_model=Person, description='Данные по персоне.')
-async def person_detail(person_id: str,
+@role_permission("user")
+async def person_detail(request: Request, person_id: str,
                         person_service: PersonService = Depends(get_person_service)) -> Person:
     person = await person_service.get_by_id(person_id)
     if not person:
